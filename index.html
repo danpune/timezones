@@ -285,7 +285,7 @@ button:active{transform:translateY(1px)}
     <a href="https://github.com/danpune/timezones">View source</a>
     <a href="https://github.com/danpune/timezones/blob/main/LICENSE">MIT licence</a>
     <a href="https://www.geonames.org/" title="City data licensed CC BY 4.0">Cities: GeoNames</a>
-    <span class="ver">build 2026.09.12-g</span>
+    <span class="ver">build 2026.09.12-h</span>
   </div>
 </footer>
 </main>
@@ -670,7 +670,7 @@ function render(){
     if(okCols.length){
       const a=hours[okCols[0]],b=hours[okCols[okCols.length-1]+1]||hours[23];
       const f=x=>new Intl.DateTimeFormat('en-US',{timeZone:bz,hour:'numeric',minute:'2-digit'}).format(x);
-      overlap.innerHTML=`<b>${okCols.length}h everyone is at work</b> · ${f(a)}–${f(b)} in ${shown(baseP())}`;
+      overlap.innerHTML=`<b>${okCols.length}h everyone is at work</b> · ${f(a)}–${f(b)} in ${esc(shown(baseP()))}`;
     } else overlap.innerHTML='<b>No hour suits everyone</b> · nobody is at work at the same time';
     overlap.hidden=false;
   } else overlap.hidden=true;
