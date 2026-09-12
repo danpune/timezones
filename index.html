@@ -106,8 +106,14 @@ footer a:hover{text-decoration:underline}
 .time .d{font-size:11px}
 .time .d{color:var(--acc);font-weight:600}
 .ic{min-width:44px;min-height:44px;margin:0 -5px;padding:0;font-size:18px;border:0;background:none;color:var(--mut);flex:none}
-.ic[data-base]{cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
+/* A phone has no cursor, so the only way to show this is a handle is to draw one.
+   The grip sits under the star inside the same 44px target. */
+.ic[data-base]{position:relative;padding-bottom:12px;cursor:grab;touch-action:none;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.ic[data-base]::after{content:'⠿';position:absolute;left:0;right:0;bottom:4px;
+  font-size:12px;line-height:1;color:var(--mut);opacity:.6;font-weight:400;letter-spacing:1px}
 .ic[data-base]:active{cursor:grabbing}
+.ic[data-base]:active::after,.city.drag .ic[data-base]::after{opacity:1;color:var(--acc)}
 .city.drag{box-shadow:var(--shh);transform:scale(1.015);z-index:3;position:relative;cursor:grabbing}
 body.reordering{-webkit-user-select:none;user-select:none;cursor:grabbing}
 body.reordering .city{transition:none}
@@ -189,7 +195,7 @@ button:active{transform:translateY(1px)}
     <input class="t" id="sliderT" type="text" inputmode="text" autocomplete="off" spellcheck="false" aria-label="Time in the base city — type one, e.g. 3pm">
   </div>
 </div>
-<div class="hint">Drag the hours, or tap the time to type one. ★ picks the base city — drag it to reorder.</div>
+<div class="hint">Drag the hours, or tap the time to type one. ★ sets the base city, ⠿ reorders.</div>
 <div id="overlap" role="status" hidden></div>
 <div id="list"><div id="scrub" hidden></div></div>
 <form class="add" id="addForm">
@@ -232,7 +238,13 @@ const PLACES={
  'Mumbai':['Asia/Kolkata',19.08,72.88],'Pune':['Asia/Kolkata',18.52,73.86],
  'Bangalore':['Asia/Kolkata',12.97,77.59],'Delhi':['Asia/Kolkata',28.61,77.21],
  'Hyderabad':['Asia/Kolkata',17.38,78.49],'Chennai':['Asia/Kolkata',13.08,80.27],
- 'Kolkata':['Asia/Kolkata',22.57,88.36],
+ 'Kolkata':['Asia/Kolkata',22.57,88.36],'Nellore':['Asia/Kolkata',14.44,79.99],
+ 'Visakhapatnam':['Asia/Kolkata',17.69,83.22],'Vijayawada':['Asia/Kolkata',16.51,80.65],
+ 'Ahmedabad':['Asia/Kolkata',23.02,72.57],'Jaipur':['Asia/Kolkata',26.91,75.79],
+ 'Lucknow':['Asia/Kolkata',26.85,80.95],'Kochi':['Asia/Kolkata',9.93,76.27],
+ 'Coimbatore':['Asia/Kolkata',11.02,76.96],'Nagpur':['Asia/Kolkata',21.15,79.09],
+ 'Indore':['Asia/Kolkata',22.72,75.86],'Surat':['Asia/Kolkata',21.17,72.83],
+ 'Chandigarh':['Asia/Kolkata',30.73,76.78],'Bhubaneswar':['Asia/Kolkata',20.30,85.82],
  'London':['Europe/London',51.51,-0.13],'Dublin':['Europe/Dublin',53.35,-6.26],
  'Paris':['Europe/Paris',48.86,2.35],'Berlin':['Europe/Berlin',52.52,13.40],
  'Amsterdam':['Europe/Amsterdam',52.37,4.90],'Madrid':['Europe/Madrid',40.42,-3.70],
@@ -249,7 +261,7 @@ const PLACES={
 // What people actually type.
 const ABBR={'sfo':'San Francisco','sf':'San Francisco','nyc':'New York','ny':'New York','la':'Los Angeles',
  'austin tx':'Austin','dc':'Washington DC','uk':'London','bengaluru':'Bangalore','india':'Mumbai',
- 'bom':'Mumbai','blr':'Bangalore','del':'Delhi','lhr':'London','jfk':'New York','ord':'Chicago',
+ 'bom':'Mumbai','blr':'Bangalore','del':'Delhi','nlr':'Nellore','hyd':'Hyderabad','maa':'Chennai','lhr':'London','jfk':'New York','ord':'Chicago',
  'dfw':'Dallas','sea':'Seattle','yyz':'Toronto','hkg':'Hong Kong','nrt':'Tokyo','syd':'Sydney','dxb':'Dubai'};
 const DEFAULT=['Austin','San Francisco','New York','Mumbai','London'];
 // What people type when they don't know IANA ids. Reviews are full of one-star
