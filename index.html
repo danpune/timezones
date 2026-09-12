@@ -367,14 +367,27 @@ function save(){try{localStorage.setItem('tz1',JSON.stringify(state))}catch(e){}
 // Readable and hand-typable: the city list is the hash itself, spaces are underscores
 // (the way IANA already spells them), and nothing is written that can be inferred.
 function tok(n){return n.replace(/ /g,'_')}
-function untok(x){const v=decodeURIComponent(x);return v.includes('/')?v:v.replace(/_/g,' ')}
+// decodeURIComponent throws on a malformed escape. The hash is advertised as hand-typable
+// and chat clients mangle links, so every decode here is total: a bad escape degrades to
+// the raw text instead of aborting the script before anything renders.
+function dec(x){try{return decodeURIComponent(x)}catch(e){return x}}
+function untok(x){const v=dec(x);return v.includes('/')?v:v.replace(/_/g,' ')}
+// A label may contain the hash's own separators, so it is percent-encoded on the way out
+// and split off before any underscore handling on the way back in.
+function encLabel(v){return encodeURIComponent(v).replace(/~/g,'%7E')}
+function parseTok(x){
+  const i=x.indexOf('~');
+  const name=untok(i<0?x:x.slice(0,i));
+  const label=i<0?null:dec(x.slice(i+1)).slice(0,24)||null;
+  return {name,label};
+}
 function defaultPlaces(){
   const ps=DEFAULT.map(place);
   if(!ps.some(p=>p.z===HOME)){const me=place(HOME);if(me)ps.unshift(me)}
   return ps;
 }
 function writeHash(){
-  const cities=state.places.map(p=>tok(p.n+(p.label?'~'+p.label:'')));
+  const cities=state.places.map(p=>tok(p.n)+(p.label?'~'+encLabel(p.label):''));
   let h='#'+cities.join(',');
   if(state.base!==state.places[0].n)h+='&b='+tok(state.base);   // first city is the base by default
   if(!live)h+='&d='+dateEl.value+'&t='+String(Math.floor(planMin/60)).padStart(2,'0')+':'+String(planMin%60).padStart(2,'0');
@@ -383,7 +396,8 @@ function writeHash(){
     &&cities.join(',')===defaultPlaces().map(p=>tok(p.n)).join(',');
   try{history.replaceState(null,'',plain?location.pathname+location.search:h)}catch(e){}
 }
-function readHash(){
+function readHash(){try{return parseHash()}catch(e){return null}}
+function parseHash(){
   const h=location.hash.slice(1);if(!h)return null;
   const q={};let bare=null;
   for(const kv of h.split('&')){
@@ -393,11 +407,16 @@ function readHash(){
   }
   const raw=bare!==null?bare:q.c;        // q.c keeps links shared before this change working
   if(!raw)return null;
-  const ps=raw.split(',').map(x=>place(untok(x))).filter(Boolean);
+  const ps=raw.split(',').map(x=>{
+    const {name,label}=parseTok(x);
+    const p=place(name);
+    if(p&&label)p.label=label;
+    return p;
+  }).filter(Boolean);
   if(!ps.length)return null;
   const b=q.b?untok(q.b):null;
   return {places:ps, base:(b&&ps.find(p=>p.n===b)||ps[0]).n,
-          d:q.d?decodeURIComponent(q.d):null, t:q.t?decodeURIComponent(q.t):null};
+          d:q.d?dec(q.d):null, t:q.t?dec(q.t):null};
 }
 
 // --- time math (all native Intl) ---
@@ -555,7 +574,7 @@ list.addEventListener('click',e=>{
   if(v===null)return;
   p.label=v.trim().slice(0,24)||null;save();render();
 });
-function flash(b,m){const o=b.textContent;b.textContent=m;setTimeout(()=>b.textContent=o,1400)}
+function flash(b,m){if(!b.dataset.o)b.dataset.o=b.textContent;clearTimeout(b._t);b.textContent=m;b._t=setTimeout(()=>{b.textContent=b.dataset.o},1400)}
 async function put(text,btn,okMsg){
   try{await navigator.clipboard.writeText(text);flash(btn,okMsg)}
   catch(e){window.prompt('Copy this:',text)}   // http, or permission denied
