@@ -37,7 +37,14 @@ button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
 @media(prefers-reduced-motion:reduce){#now .dot{animation:none}}
 .slider{display:flex;align-items:center;gap:10px}
 .slider input{flex:1;height:44px;accent-color:var(--acc)}
-.slider .t{min-width:88px;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;font-size:18px}
+.slider .t{width:96px;min-width:96px;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;
+  font-size:18px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--tx);
+  padding:6px 4px;font-family:inherit;cursor:text}
+.slider .t:focus{outline:none;border-color:var(--acc);background:var(--panel);text-align:center}
+.slider .t.bad{border-color:#dc2626}
+#list{position:relative}
+/* One band drawn across every card, so the same instant reads as a single line down the page. */
+#scrub{position:absolute;pointer-events:none;z-index:1;background:var(--acc);opacity:.3;border-radius:2px}
 .city{background:var(--panel);background-image:linear-gradient(100deg,var(--wash,transparent),transparent 55%);border:1px solid var(--line);border-radius:14px;padding:11px 12px 13px;margin-bottom:9px;box-shadow:inset 4px 0 0 var(--sky,transparent);overflow:hidden}
 .city.base{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
 .top{display:flex;align-items:center;gap:8px}
@@ -64,7 +71,7 @@ footer img{height:20px;width:auto}
 .time .d{color:var(--acc);font-weight:600}
 .ic{min-width:44px;min-height:44px;margin:0 -5px;padding:0;font-size:18px;border:0;background:none;color:var(--mut);flex:none}
 .ic.on{color:var(--acc)}
-.grid{display:grid;grid-template-columns:repeat(24,1fr);gap:1px;margin-top:9px;border-radius:8px;overflow:hidden}
+.grid{display:grid;grid-template-columns:repeat(24,1fr);gap:1px;margin-top:9px;border-radius:8px;overflow:hidden;touch-action:pan-y}
 .grid div{font-size:10px;text-align:center;padding:8px 0 9px;background:var(--night);color:var(--night-tx);cursor:pointer;line-height:1;min-height:24px}
 .grid .w{background:var(--work);color:var(--work-tx)}
 .grid .e{background:var(--edge);color:var(--edge-tx)}
@@ -89,11 +96,11 @@ footer img{height:20px;width:auto}
   </div>
   <div class="slider">
     <input type="range" id="slider" min="0" max="1425" step="15" aria-label="Time of day in base city">
-    <div class="t" id="sliderT"></div>
+    <input class="t" id="sliderT" type="text" inputmode="text" autocomplete="off" spellcheck="false" aria-label="Time in the base city — type one, e.g. 3pm">
   </div>
-  <div class="hint">Slide or tap an hour to plan ahead. ★ picks the base city.</div>
+  <div class="hint">Drag the hours, or tap the time to type one. ★ picks the base city.</div>
 </div>
-<div id="list"></div>
+<div id="list"><div id="scrub" hidden></div></div>
 <form class="add" id="addForm">
   <input id="addInput" list="tzList" placeholder="Add city or zone (e.g. Tokyo, Berlin, Asia/Dubai)" autocomplete="off">
   <datalist id="tzList"></datalist>
@@ -271,27 +278,38 @@ function offset(t,zone){return new Intl.DateTimeFormat('en-US',{timeZone:zone,ti
 
 // --- UI ---
 const $=id=>document.getElementById(id);
-const dateEl=$('date'),slider=$('slider'),sliderT=$('sliderT'),list=$('list');
+const dateEl=$('date'),slider=$('slider'),sliderT=$('sliderT'),list=$('list'),scrub=$('scrub');
 $('tzLocal').textContent='You: '+Intl.DateTimeFormat().resolvedOptions().timeZone;
 for(const z of ALL){const o=document.createElement('option');o.value=z;$('tzList').appendChild(o)}
 for(const n of Object.keys(PLACES)){const o=document.createElement('option');o.value=n;$('tzList').appendChild(o)}
 
 // live = the page tracks the real clock. The slider only steps in 15s, so while live we
 // read Date.now() directly and let the slider follow along as a rough position indicator.
-let live=true;
-function syncControls(t){const bz=baseP().z;dateEl.value=ymd(t,bz);const w=new Date(wall(t,bz));slider.value=Math.round((w.getUTCHours()*60+w.getUTCMinutes())/15)*15}
+let live=true,planMin=0;
+function syncControls(t){const bz=baseP().z;dateEl.value=ymd(t,bz);const w=new Date(wall(t,bz));
+  planMin=w.getUTCHours()*60+w.getUTCMinutes();slider.value=Math.round(planMin/15)*15}
+// Accepts 3pm, 3 PM, 3:30pm, 15:30, 1530, 9, 09:15. Minute-of-day, or null.
+function parseTime(v){
+  const m=String(v).trim().toLowerCase().replace(/[.\s]/g,'').match(/^(\d{1,2})(?::?(\d{2}))?(am|pm|a|p)?$/);
+  if(!m)return null;
+  let h=+m[1];const mi=m[2]?+m[2]:0,ap=m[3];
+  if(mi>59)return null;
+  if(ap){if(h<1||h>12)return null;h=h%12+(ap[0]==='p'?12:0)}else if(h>23)return null;
+  return h*60+mi;
+}
+function goTo(min){live=false;planMin=Math.max(0,Math.min(1439,min));slider.value=Math.round(planMin/15)*15;render()}
 function setNow(){live=true;render()}
 function render(){
   const bz=baseP().z;
-  const t=live?Date.now():instantAt(dateEl.value,+slider.value,bz);
+  const t=live?Date.now():instantAt(dateEl.value,planMin,bz);
   if(live)syncControls(t);
   now.className=live?'':'primary';
   now.innerHTML=live?'<span class="dot"></span>Live':'Back to now';
   const baseDay=ymd(t,bz);
-  sliderT.textContent=new Intl.DateTimeFormat('en-US',{timeZone:bz,hour:'numeric',minute:'2-digit'}).format(t);
+  if(document.activeElement!==sliderT){sliderT.value=new Intl.DateTimeFormat('en-US',{timeZone:bz,hour:'numeric',minute:'2-digit'}).format(t);sliderT.classList.remove('bad')}
   const hours=[];for(let h=0;h<24;h++)hours.push(instantAt(dateEl.value,h*60,bz));
   const curH=hourIn(t,bz);
-  list.innerHTML='';
+  list.innerHTML='';list.appendChild(scrub);
   state.places.forEach((p,i)=>{
     const z=p.z,on=p.n===state.base;
     const day=ymd(t,z);const dd=Math.round((Date.parse(day)-Date.parse(baseDay))/864e5);
@@ -322,9 +340,18 @@ function render(){
       }).join('')}</div>`;
     list.appendChild(el);
   });
+  // Lay the band over the selected column, from the first card's cell to the last card's,
+  // so it crosses the gaps and reads as one line through every zone.
+  const marks=[...list.querySelectorAll('.grid .cur')];
+  if(marks.length){
+    const lr=list.getBoundingClientRect(),a=marks[0].getBoundingClientRect(),b=marks[marks.length-1].getBoundingClientRect();
+    scrub.style.left=(a.left-lr.left+a.width/2-1)+'px';scrub.style.width='2px';
+    scrub.style.top=(a.top-lr.top-4)+'px';scrub.style.height=(b.bottom-a.top+8)+'px';
+    scrub.hidden=false;
+  }else scrub.hidden=true;
 }
 list.addEventListener('click',e=>{
-  const b=e.target.closest('[data-base]'),d=e.target.closest('[data-del]'),h=e.target.closest('[data-h]');
+  const b=e.target.closest('[data-base]'),d=e.target.closest('[data-del]');
   if(b){ // keep the same instant, re-express it in the new base
     const t=live?Date.now():instantAt(dateEl.value,+slider.value,baseP().z);
     state.base=state.places[+b.dataset.base].n;syncControls(t);save();render()}
@@ -333,7 +360,7 @@ list.addEventListener('click',e=>{
     const gone=state.places.splice(+d.dataset.del,1)[0];
     if(state.base===gone.n){state.base=state.places[0].n;syncControls(t)} // hold the instant
     save();render()}}
-  else if(h){live=false;slider.value=h.dataset.h*60;render()}
+
 });
 $('addForm').addEventListener('submit',e=>{
   e.preventDefault();const q=$('addInput').value.trim();if(!q)return;
@@ -344,8 +371,44 @@ $('addForm').addEventListener('submit',e=>{
 });
 const now=$('now');
 now.addEventListener('click',setNow);
-slider.addEventListener('input',()=>{live=false;render()});
+slider.addEventListener('input',()=>{live=false;planMin=+slider.value;render()});
 dateEl.addEventListener('change',()=>{live=false;render()});
+
+// Drag anywhere across the strips to move the band; touch-action:pan-y keeps vertical scroll.
+let dragging=false;
+// Column from x-geometry rather than hit-testing: every strip shares the same 24-column
+// grid, so this keeps tracking even when the finger drifts off the strip vertically.
+function colAtX(x){
+  const g=list.querySelector('.grid');if(!g)return null;
+  const r=g.getBoundingClientRect();if(r.width<=0)return null;
+  return Math.max(0,Math.min(23,Math.floor((x-r.left)/(r.width/24))));
+}
+list.addEventListener('pointerdown',e=>{
+  const c=e.target.closest&&e.target.closest('.grid div');if(!c)return;
+  dragging=true;try{list.setPointerCapture(e.pointerId)}catch(err){}
+  goTo(+c.dataset.h*60);
+});
+list.addEventListener('pointermove',e=>{
+  if(!dragging)return;
+  const j=colAtX(e.clientX);
+  if(j!==null&&j*60!==planMin)goTo(j*60);
+});
+for(const ev of ['pointerup','pointercancel'])list.addEventListener(ev,()=>{dragging=false});
+
+// Type a time into the readout: 3pm, 15:30, 9:15am.
+sliderT.addEventListener('focus',()=>sliderT.select());
+sliderT.addEventListener('input',()=>sliderT.classList.toggle('bad',sliderT.value.trim()!==''&&parseTime(sliderT.value)===null));
+sliderT.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sliderT.blur()}
+  else if(e.key==='Escape'){sliderT.value='';sliderT.blur()}});
+sliderT.addEventListener('blur',()=>{
+  const v=parseTime(sliderT.value);
+  sliderT.classList.remove('bad');
+  if(v===null){render();return}   // unparseable: put the real time back
+  goTo(v);
+});
+
+// the band is positioned from measured geometry, so it has to be re-measured on reflow
+addEventListener('resize',render);
 
 // tick the clock: check often, repaint only when the displayed minute actually rolls over
 let lastMin=-1;
