@@ -7,10 +7,22 @@
 <meta name="description" content="Compare Austin, San Francisco, New York, Mumbai, London or any time zone. Slide across the day, see who is at work.">
 <meta name="theme-color" content="#1d4ed8">
 <link rel="canonical" href="https://danpune.github.io/timezones/">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Zones">
+<meta name="mobile-web-app-capable" content="yes">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Time Zones",
+"url":"https://danpune.github.io/timezones/","applicationCategory":"UtilitiesApplication",
+"operatingSystem":"Any","browserRequirements":"Requires JavaScript",
+"description":"Compare cities at a glance with real sunrise, sunset and daylight per city. No ads, no sign-up.",
+"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},
+"license":"https://opensource.org/licenses/MIT","isAccessibleForFree":true}
+</script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Time Zones">
 <meta property="og:title" content="Time Zones — compare cities at a glance">
-<meta property="og:description" content="Austin, San Francisco, New York, Mumbai, London or any city. Real sunrise, sunset and daylight per city. No ads, no sign-up, no network needed once it loads.">
+<meta property="og:description" content="Austin, San Francisco, New York, Mumbai, London or any city. Real sunrise, sunset and daylight per city. No ads, no sign-up, works offline.">
 <meta property="og:url" content="https://danpune.github.io/timezones/">
 <meta property="og:image" content="https://danpune.github.io/timezones/preview.png">
 <meta property="og:image:type" content="image/png">
@@ -19,13 +31,11 @@
 <meta property="og:image:alt" content="Four cities with their local times and a coloured strip showing daylight across the day.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Time Zones — compare cities at a glance">
-<meta name="twitter:description" content="Real sunrise, sunset and daylight per city. No ads, no sign-up, no network needed once it loads.">
+<meta name="twitter:description" content="Real sunrise, sunset and daylight per city. No ads, no sign-up, works offline.">
 <meta name="twitter:image" content="https://danpune.github.io/timezones/preview.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Zones">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231d4ed8'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='white' stroke-width='2.5'/%3E%3Cpath d='M16 9v7l5 3' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%231d4ed8'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='white' stroke-width='2.5'/%3E%3Cpath d='M16 9v7l5 3' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -131,6 +141,11 @@ body.reordering .city{transition:none}
 #overlap{font-size:12px;color:var(--tx);background:var(--panel);border:1px solid var(--line);
   border-left:4px solid #16a34a;border-radius:8px;padding:9px 12px;margin-bottom:10px;box-shadow:var(--sh)}
 .acts{display:flex;gap:8px;margin:4px 0 12px;flex-wrap:wrap}
+.inst{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--tx);background:var(--panel);
+  border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:8px;padding:9px 10px 9px 12px;margin-bottom:10px;box-shadow:var(--sh)}
+.inst span{flex:1}
+.inst button{min-height:34px;padding:0 12px;font-size:12.5px;color:var(--acc)}
+.inst #instX{min-width:34px;padding:0;font-size:17px;color:var(--mut);border-color:transparent;background:none}
 #say{font-size:12px;color:var(--tx);background:var(--panel);border:1px solid var(--line);
   border-left:4px solid #d97706;border-radius:8px;padding:9px 12px;margin:-4px 0 10px}
 #say button{min-height:32px;padding:0 10px;font-size:12px;color:var(--acc);margin:2px 0}
@@ -212,12 +227,13 @@ button:active{transform:translateY(1px)}
   whatever time it is where I am. No ads, no sign-up, no tracking.</p>
   <p>Conversions come from your own device's time zone database, so daylight saving is always current.
   Sunrise, sunset and the sky colours are computed from each city's latitude and longitude rather than
-  fetched, so once the page has loaded it needs no network at all.</p>
+  fetched, and the page caches itself, so it keeps working with no connection. MIT licensed.</p>
   <div class="count">
     <a class="hits" href="https://hits.sh/danpune.github.io/timezones/" title="Total visits to this page"><img
       src="https://hits.sh/danpune.github.io/timezones.svg?style=for-the-badge&label=visits&color=1d4ed8&labelColor=14181d"
       alt="Total visits to this page" width="112" height="28"></a>
     <a href="https://github.com/danpune/timezones">View source</a>
+    <a href="https://github.com/danpune/timezones/blob/main/LICENSE">MIT licence</a>
   </div>
 </footer>
 </main>
@@ -587,6 +603,27 @@ $('addForm').addEventListener('submit',e=>{
   $('addInput').value='';save();render();
 });
 const now=$('now'),say=$('say');
+
+// Offline: cache the shell so a dropped connection does not blank the page.
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+
+// Add to Home Screen. Chrome fires an event we can act on; iOS Safari has no API,
+// so it gets a one-time dismissible note explaining the Share-sheet route.
+const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+let installEvt=null;
+function showInstall(html){
+  if(standalone||localStorage.getItem('tzInstall')==='x')return;
+  const b=document.createElement('div');b.className='inst';b.innerHTML=html+'<button type="button" id="instX" aria-label="Dismiss">×</button>';
+  document.querySelector('main').insertBefore(b,document.getElementById('overlap'));
+  b.addEventListener('click',e=>{
+    if(e.target.id==='instX'){try{localStorage.setItem('tzInstall','x')}catch(_){}b.remove();return}
+    if(e.target.id==='instGo'&&installEvt){installEvt.prompt();installEvt=null;b.remove()}
+  });
+}
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;
+  showInstall('<span>Add Time Zones to your home screen</span><button type="button" id="instGo">Install</button>')});
+if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&/Safari/.test(navigator.userAgent)&&!/CriOS|FxiOS/.test(navigator.userAgent))
+  showInstall('<span>Add to Home Screen: tap Share, then <b>Add to Home Screen</b></span>');
 list.addEventListener('click',e=>{
   const r=e.target.closest('[data-ren]');if(!r)return;
   const p=state.places[+r.dataset.ren];if(!p)return;
