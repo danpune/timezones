@@ -10,7 +10,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Time Zones">
 <meta property="og:title" content="Time Zones — compare cities at a glance">
-<meta property="og:description" content="Austin, San Francisco, New York, Mumbai, London or any city. Real sunrise, sunset and daylight per city. No ads, no sign-up, works offline.">
+<meta property="og:description" content="Austin, San Francisco, New York, Mumbai, London or any city. Real sunrise, sunset and daylight per city. No ads, no sign-up, no network needed once it loads.">
 <meta property="og:url" content="https://danpune.github.io/timezones/">
 <meta property="og:image" content="https://danpune.github.io/timezones/preview.png">
 <meta property="og:image:type" content="image/png">
@@ -19,7 +19,7 @@
 <meta property="og:image:alt" content="Four cities with their local times and a coloured strip showing daylight across the day.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Time Zones — compare cities at a glance">
-<meta name="twitter:description" content="Real sunrise, sunset and daylight per city. No ads, no sign-up, works offline.">
+<meta name="twitter:description" content="Real sunrise, sunset and daylight per city. No ads, no sign-up, no network needed once it loads.">
 <meta name="twitter:image" content="https://danpune.github.io/timezones/preview.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -29,6 +29,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
+  color-scheme:light dark;
   --bg:#f7f6f3;--panel:#fff;--line:#e6e3dd;--tx:#14181d;--mut:#5a6270;--acc:#1d4ed8;
   --sh:0 1px 3px rgba(16,24,40,.05),0 5px 16px rgba(16,24,40,.05);
   --shh:0 2px 6px rgba(16,24,40,.09),0 12px 30px rgba(16,24,40,.10);
@@ -79,13 +80,14 @@ button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
 .name b{font-size:17px;display:flex;align-items:center;gap:5px;min-width:0}
 .name b em{font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gl{width:15px;height:15px;flex:none}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .sun{fill:none;stroke:#f59e0b;stroke-width:2.2;stroke-linecap:round}
 .sun circle{fill:#f59e0b}
 .moon{fill:#9aa7bd;stroke:none}
 .sunrow{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:11px;color:var(--mut);margin-top:7px}
 .sunrow .gl{width:12px;height:12px}
 .sunrow b{font-weight:600;color:var(--tx);font-variant-numeric:tabular-nums}
-.sunrow i{font-style:normal;opacity:.55}
+.sunrow i{font-style:normal;color:var(--mut)}
 .sunrow .rel{color:var(--acc);font-weight:700}
 footer{margin:16px 0 28px;font-size:13px;color:var(--mut);line-height:1.6;
   background:var(--panel);border:1px solid var(--line);border-radius:12px;
@@ -115,7 +117,7 @@ body.reordering .city{transition:none}
 .grid div{font-size:11px;text-align:center;padding:10px 0 11px;background:var(--night);color:var(--night-tx);cursor:pointer;line-height:1;min-height:30px;position:relative}
 .grid .w{background:var(--work);color:var(--work-tx)}
 .grid .e{background:var(--edge);color:var(--edge-tx)}
-.grid .wk{box-shadow:inset 0 -3px 0 rgba(15,110,50,.95)}
+.grid .wk{box-shadow:inset 0 -3px 0 currentColor}
 .grid .cur{outline:3px solid currentColor;outline-offset:-3px;font-weight:800;z-index:2}
 .add{display:flex;gap:8px;margin:12px 0 8px}
 .add input{flex:1;min-height:44px;font:inherit;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--tx)}
@@ -127,7 +129,7 @@ body.reordering .city{transition:none}
   border-left:4px solid #d97706;border-radius:8px;padding:9px 12px;margin:-4px 0 10px}
 #say button{min-height:32px;padding:0 10px;font-size:12px;color:var(--acc);margin:2px 0}
 .acts button{font-size:13px;padding:0 14px;min-height:40px;color:var(--acc)}
-.grid .ok{box-shadow:inset 0 3px 0 rgba(22,163,74,.95),inset 0 -3px 0 rgba(15,110,50,.95)}
+.grid .ok{box-shadow:inset 0 3px 0 currentColor,inset 0 -3px 0 currentColor}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px}
 .legend .sw{width:46px;background:linear-gradient(90deg,#0d1430,#7a4f6b,#e08b3c,#a9cfe8)}
 .legend .wm{width:14px;background:transparent;box-shadow:inset 0 -3px 0 rgba(22,163,74,.9);border:1px solid var(--line)}
@@ -188,14 +190,14 @@ button:active{transform:translateY(1px)}
   </div>
 </div>
 <div class="hint">Drag the hours, or tap the time to type one. ★ picks the base city — drag it to reorder.</div>
-<div id="overlap" hidden></div>
+<div id="overlap" role="status" hidden></div>
 <div id="list"><div id="scrub" hidden></div></div>
 <form class="add" id="addForm">
   <input id="addInput" list="tzList" placeholder="Add city or zone (e.g. Tokyo, Berlin, Asia/Dubai)" autocomplete="off">
   <datalist id="tzList"></datalist>
   <button type="submit">Add</button>
 </form>
-<div id="say" hidden></div>
+<div id="say" role="status" hidden></div>
 <div class="acts"><button id="copy" type="button">Copy times</button><button id="share" type="button">Copy link</button></div>
 <div class="legend"><span><i class="sw"></i>Real sunlight at each city</span><span><i class="wm"></i>Work hours</span></div>
 <footer>
@@ -204,7 +206,7 @@ button:active{transform:translateY(1px)}
   whatever time it is where I am. No ads, no sign-up, no tracking.</p>
   <p>Conversions come from your own device's time zone database, so daylight saving is always current.
   Sunrise, sunset and the sky colours are computed from each city's latitude and longitude rather than
-  fetched, which means the page keeps working with no connection.</p>
+  fetched, so once the page has loaded it needs no network at all.</p>
   <div class="count">
     <a class="hits" href="https://hits.sh/danpune.github.io/timezones/" title="Total visits to this page"><img
       src="https://hits.sh/danpune.github.io/timezones.svg?style=for-the-badge&label=visits&color=1d4ed8&labelColor=14181d"
@@ -328,7 +330,7 @@ const HOME=Intl.DateTimeFormat().resolvedOptions().timeZone;
 function place(q){
   if(!q)return null;
   let k=q.trim(),label=null;
-  const tilde=k.indexOf('~');if(tilde>0){label=k.slice(tilde+1).slice(0,24);k=k.slice(0,tilde)}
+  const tilde=k.indexOf('~');if(tilde>0){label=cut(k.slice(tilde+1),24);k=k.slice(0,tilde)}
   const lk=k.toLowerCase();
   const name=Object.keys(PLACES).find(n=>n.toLowerCase()===lk)||ABBR[lk]||ZONEWORDS[lk];
   if(name){const v=PLACES[name];return{n:name,z:v[0],la:v[1],lo:v[2],label}}
@@ -374,11 +376,12 @@ function dec(x){try{return decodeURIComponent(x)}catch(e){return x}}
 function untok(x){const v=dec(x);return v.includes('/')?v:v.replace(/_/g,' ')}
 // A label may contain the hash's own separators, so it is percent-encoded on the way out
 // and split off before any underscore handling on the way back in.
-function encLabel(v){return encodeURIComponent(v).replace(/~/g,'%7E')}
+function cut(v,n){return [...String(v)].slice(0,n).join('')}   // never split a surrogate pair
+function encLabel(v){try{return encodeURIComponent(v).replace(/~/g,'%7E')}catch(e){return ''}}
 function parseTok(x){
   const i=x.indexOf('~');
   const name=untok(i<0?x:x.slice(0,i));
-  const label=i<0?null:dec(x.slice(i+1)).slice(0,24)||null;
+  const label=i<0?null:cut(dec(x.slice(i+1)),24)||null;
   return {name,label};
 }
 function defaultPlaces(){
@@ -485,6 +488,10 @@ function render(){
   if(document.activeElement!==sliderT){sliderT.value=new Intl.DateTimeFormat('en-US',{timeZone:bz,hour:'numeric',minute:'2-digit'}).format(t);sliderT.classList.remove('bad')}
   const hours=[];for(let h=0;h<24;h++)hours.push(instantAt(dateEl.value,h*60,bz));
   const curH=hourIn(t,bz),wide=innerWidth>=400;
+  const ae=document.activeElement;                       // a repaint must not steal the keyboard
+  const keep=ae&&ae.dataset?(ae.dataset.base!=null?'[data-base="'+ae.dataset.base+'"]'
+             :ae.dataset.del!=null?'[data-del="'+ae.dataset.del+'"]'
+             :ae.dataset.ren!=null?'[data-ren="'+ae.dataset.ren+'"]':null):null;
   list.innerHTML='';list.appendChild(scrub);
   state.places.forEach((p,i)=>{
     const z=p.z,on=p.n===state.base;
@@ -496,13 +503,13 @@ function render(){
     const sunrow=!st?`<div class="sunrow"><b class="rel">${fromYou(t,z)}</b><i>${offset(t,z)}</i></div>`
       :st.polar?`<div class="sunrow"><b class="rel">${fromYou(t,z)}</b><i>${offset(t,z)}</i>${up?SUN_SVG:MOON_SVG}<span><b>${st.polar}</b></span></div>`
       :`<div class="sunrow"><b class="rel">${fromYou(t,z)}</b><i>${offset(t,z)}</i>${SUN_SVG}${
-          st.rise?`<span>↑ <b>${hm(st.rise)}</b></span>`:''}${
-          st.set?`<span>↓ <b>${hm(st.set)}</b></span>`:''}${
+          st.rise?`<span><span class="sr">Sunrise </span>↑ <b>${hm(st.rise)}</b></span>`:''}${
+          st.set?`<span><span class="sr">Sunset </span>↓ <b>${hm(st.set)}</b></span>`:''}${
           st.set?'':'<span><b>no sunset</b></span>'}${
           st.rise?'':'<span><b>no sunrise</b></span>'}</div>`;
     el.innerHTML=`<div class="top">
-      <button class="ic${on?' on':''}" data-base="${i}" aria-label="Set ${esc(shown(p))} as base">${on?'★':'☆'}</button>
-      <div class="name" data-ren="${i}" title="${esc(z)} · ${offset(t,z)} — tap to rename"><b><em>${esc(shown(p))}</em>${has?(up?SUN_SVG:MOON_SVG):''}</b></div>
+      <button class="ic${on?' on':''}" data-base="${i}" aria-pressed="${on}" aria-label="${esc(shown(p))} as base city">${on?'★':'☆'}</button>
+      <div class="name" data-ren="${i}" title="${esc(z)} · ${offset(t,z)} — tap to rename"><b><em>${esc(shown(p))}</em>${has?(up?SUN_SVG:MOON_SVG)+'<span class="sr">'+(up?'daytime':'night')+'</span>':''}</b></div>
       <div class="time"><b>${hm(t)}</b>
         <span>${new Intl.DateTimeFormat('en-US',{timeZone:z,weekday:'short',month:'short',day:'numeric'}).format(t)}${dd?` <em class="d">${dd>0?'+':''}${dd}</em>`:''}</span></div>
       <button class="ic" data-del="${i}" aria-label="Remove ${esc(shown(p))}">×</button></div>
@@ -537,6 +544,7 @@ function render(){
     scrub.style.top=(a.top-lr.top-4)+'px';scrub.style.height=(b.bottom-a.top+8)+'px';
     scrub.hidden=false;
   }else scrub.hidden=true;
+  if(keep){const back=list.querySelector(keep);if(back&&back.focus)back.focus()}
   writeHash();
 }
 list.addEventListener('click',e=>{
@@ -544,10 +552,10 @@ list.addEventListener('click',e=>{
   if(ateClick){ateClick=false;return}   // the ★ was dragged, not tapped
   const b=e.target.closest('[data-base]'),d=e.target.closest('[data-del]');
   if(b){ // keep the same instant, re-express it in the new base
-    const t=live?Date.now():instantAt(dateEl.value,+slider.value,baseP().z);
+    const t=live?Date.now():instantAt(dateEl.value,planMin,baseP().z);
     state.base=state.places[+b.dataset.base].n;syncControls(t);save();render()}
   else if(d){if(state.places.length>1){
-    const t=live?Date.now():instantAt(dateEl.value,+slider.value,baseP().z);
+    const t=live?Date.now():instantAt(dateEl.value,planMin,baseP().z);
     const gone=state.places.splice(+d.dataset.del,1)[0];
     if(state.base===gone.n){state.base=state.places[0].n;syncControls(t)} // hold the instant
     save();render()}}
@@ -572,7 +580,7 @@ list.addEventListener('click',e=>{
   const p=state.places[+r.dataset.ren];if(!p)return;
   const v=prompt('Name for '+p.n,p.label||'');
   if(v===null)return;
-  p.label=v.trim().slice(0,24)||null;save();render();
+  p.label=cut(v.trim(),24)||null;save();render();
 });
 function flash(b,m){if(!b.dataset.o)b.dataset.o=b.textContent;clearTimeout(b._t);b.textContent=m;b._t=setTimeout(()=>{b.textContent=b.dataset.o},1400)}
 async function put(text,btn,okMsg){
@@ -665,20 +673,21 @@ sliderT.addEventListener('blur',()=>{
 });
 
 // the band is positioned from measured geometry, so it has to be re-measured on reflow
-addEventListener('resize',render);
+addEventListener('resize',()=>{if(row===null&&!dragging)render()});
 // separate the sticky bar from the list only once it actually overlaps content
 const bar=document.querySelector('.bar');
 addEventListener('scroll',()=>bar.classList.toggle('stuck',scrollY>4),{passive:true});
 
 // tick the clock: check often, repaint only when the displayed minute actually rolls over
 let lastMin=-1;
-setInterval(()=>{const m=new Date().getMinutes();if(live&&m!==lastMin){lastMin=m;render()}},5000);
+setInterval(()=>{const m=new Date().getMinutes();if(live&&m!==lastMin&&row===null&&!dragging){lastMin=m;render()}},5000);
 // iOS freezes timers in a backgrounded tab, so catch up the moment it comes back
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&live)render()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&live&&row===null&&!dragging)render()});
 
 (function start(){
   const u=readHash();
-  if(u&&u.d&&u.t){const[h,m]=u.t.split(':').map(Number);live=false;dateEl.value=u.d;
+  const v=u&&u.t?parseTime(u.t):null;   // the same validator the typed-time box uses
+  if(u&&u.d&&v!==null){const h=Math.floor(v/60),m=v%60;live=false;dateEl.value=u.d;
     planMin=h*60+(m||0);slider.value=Math.round(planMin/15)*15;render();return}
   setNow();
 })();
