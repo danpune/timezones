@@ -110,6 +110,7 @@ footer .count .hits{line-height:0;border-radius:6px;overflow:hidden}
 footer img{height:30px;width:auto;min-width:112px;vertical-align:middle;display:block}
 footer a{color:var(--acc);text-decoration:none;font-weight:600;font-size:12px}
 footer a:hover{text-decoration:underline}
+footer .ver{font-size:11px;color:var(--mut);font-variant-numeric:tabular-nums}
 .time{text-align:right;font-variant-numeric:tabular-nums}
 .time b{font-size:22px;display:block;line-height:1.08;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .time span{font-size:12px;color:var(--mut);white-space:nowrap}
@@ -127,10 +128,7 @@ footer a:hover{text-decoration:underline}
 /* Touch: iOS commits a swipe to page scroll before a pointer handler can claim it, so
    dragging is a mouse affordance only. On a phone the grip would promise something that
    does not happen, so it is hidden and Reorder mode does the job instead. */
-@media (pointer:coarse){
-  .ic[data-base]{touch-action:manipulation;padding-bottom:0;cursor:pointer}
-  .ic[data-base]::after{display:none}
-}
+/* Touch devices get the same drag as a mouse, via touch events (below), so the grip stays. */
 /* Reorder mode: cards collapse to a compact list with explicit up/down buttons. Works on
    every device, needs no gesture, and gives keyboard and screen-reader users a way in. */
 .mv{display:none}
@@ -253,6 +251,7 @@ button:active{transform:translateY(1px)}
       alt="Total visits to this page" width="112" height="28"></a>
     <a href="https://github.com/danpune/timezones">View source</a>
     <a href="https://github.com/danpune/timezones/blob/main/LICENSE">MIT licence</a>
+    <span class="ver">build 2026.09.12-d</span>
   </div>
 </footer>
 </main>
@@ -640,7 +639,16 @@ $('addForm').addEventListener('submit',e=>{
 const now=$('now'),say=$('say');
 
 // Offline: cache the shell so a dropped connection does not blank the page.
-if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+// Register, ask for an update on every load, and reload once when a newer worker takes
+// over, so a phone that installed the site does not keep running an old copy for days.
+// Only reload on an UPDATE: the first install also fires controllerchange.
+if('serviceWorker' in navigator){
+  const hadController=!!navigator.serviceWorker.controller;let reloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(!hadController||reloaded)return;reloaded=true;location.reload();
+  });
+  addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{}));
+}
 
 // Add to Home Screen. Chrome fires an event we can act on; iOS Safari has no API,
 // so it gets a one-time dismissible note explaining the Share-sheet route.
@@ -703,6 +711,47 @@ function colAtX(x){
   const r=g.getBoundingClientRect();if(r.width<=0)return null;
   return Math.max(0,Math.min(23,Math.floor((x-r.left)/(r.width/24))));
 }
+// ---- Touch drag (iOS/Android). Pointer events cannot stop iOS from scrolling; a
+// non-passive touchstart that calls preventDefault can, so phones use touch events here.
+// preventDefault on touchstart also swallows the tap's click, so a tap is handled on touchend.
+let tRow=null,tMoved=false,tY=0,tEl=null;
+function tEnd(commitTap){
+  if(tRow===null)return;
+  document.body.classList.remove('reordering');
+  if(tEl)tEl.classList.remove('drag');
+  if(tMoved){save();render()}
+  else if(commitTap){
+    const t=live?Date.now():instantAt(dateEl.value,planMin,baseP().z);
+    state.base=state.places[tRow].n;syncControls(t);save();render();
+  }
+  tRow=null;tEl=null;tMoved=false;
+}
+list.addEventListener('touchstart',e=>{
+  if(document.body.classList.contains('edit'))return;   // Reorder mode uses its buttons
+  const g=e.target.closest&&e.target.closest('[data-base]');
+  if(!g||e.touches.length!==1)return;
+  e.preventDefault();
+  tRow=+g.dataset.base;tMoved=false;tY=e.touches[0].clientY;tEl=g.closest('.city');
+},{passive:false});
+list.addEventListener('touchmove',e=>{
+  if(tRow===null)return;
+  e.preventDefault();
+  const y=e.touches[0].clientY;
+  if(!tMoved&&Math.abs(y-tY)<6)return;
+  if(!tMoved){tMoved=true;document.body.classList.add('reordering');tEl.classList.add('drag')}
+  const cards=[...list.querySelectorAll('.city')];
+  let to=cards.findIndex(c=>{const r=c.getBoundingClientRect();return y<r.top+r.height/2});
+  if(to===-1)to=cards.length-1;
+  if(to!==tRow){
+    state.places.splice(to,0,state.places.splice(tRow,1)[0]);
+    const ref=cards[to];
+    list.insertBefore(tEl,to>tRow?ref.nextSibling:ref);
+    tRow=to;
+  }
+},{passive:false});
+list.addEventListener('touchend',()=>tEnd(true));
+list.addEventListener('touchcancel',()=>tEnd(false));
+
 // Drag the ★ to reorder. It is already at the left edge where a grip belongs, so this
 // adds no chrome; a tap still sets the base city because click only fires if nothing moved.
 let row=null,rowMoved=false,rowY=0,ateClick=false,rowEl=null;
@@ -766,16 +815,16 @@ sliderT.addEventListener('blur',()=>{
 });
 
 // the band is positioned from measured geometry, so it has to be re-measured on reflow
-addEventListener('resize',()=>{if(row===null&&!dragging)render()});
+addEventListener('resize',()=>{if(row===null&&tRow===null&&!dragging)render()});
 // separate the sticky bar from the list only once it actually overlaps content
 const bar=document.querySelector('.bar');
 addEventListener('scroll',()=>bar.classList.toggle('stuck',scrollY>4),{passive:true});
 
 // tick the clock: check often, repaint only when the displayed minute actually rolls over
 let lastMin=-1;
-setInterval(()=>{const m=new Date().getMinutes();if(live&&m!==lastMin&&row===null&&!dragging){lastMin=m;render()}},5000);
+setInterval(()=>{const m=new Date().getMinutes();if(live&&m!==lastMin&&row===null&&tRow===null&&!dragging){lastMin=m;render()}},5000);
 // iOS freezes timers in a backgrounded tab, so catch up the moment it comes back
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&live&&row===null&&!dragging)render()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&live&&row===null&&tRow===null&&!dragging)render()});
 
 (function start(){
   const u=readHash();
