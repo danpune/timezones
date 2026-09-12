@@ -104,6 +104,10 @@ footer{margin:16px 0 28px;font-size:13px;color:var(--mut);line-height:1.6;
   padding:16px 18px 14px;box-shadow:var(--sh)}
 footer h2{font-size:15px;color:var(--tx);margin-bottom:7px;letter-spacing:-.01em}
 footer p{margin-bottom:10px;max-width:62ch}
+footer h2.how{margin-top:16px}
+footer .howto{margin:4px 0 0 18px;padding:0;max-width:66ch}
+footer .howto li{margin:0 0 6px;padding-left:2px}
+footer .howto b{color:var(--tx);font-weight:600}
 footer .count{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
   margin-top:15px;padding-top:14px;border-top:1px solid var(--line)}
 footer .count .hits{line-height:0;border-radius:6px;overflow:hidden}
@@ -227,7 +231,7 @@ button:active{transform:translateY(1px)}
     <input class="t" id="sliderT" type="text" inputmode="text" autocomplete="off" spellcheck="false" aria-label="Time in the base city — type one, e.g. 3pm">
   </div>
 </div>
-<div class="hint"><span>Drag the hours, or tap the time to type one. ★ sets the base city.</span><button id="reorder" type="button" aria-pressed="false">Reorder</button></div>
+<div class="hint"><span>Drag the hours or tap the time to type one. Tap ☆ to set the base city, hold and drag it to reorder.</span><button id="reorder" type="button" aria-pressed="false">Reorder</button></div>
 <div id="overlap" role="status" hidden></div>
 <div id="list"><div id="scrub" hidden></div></div>
 <form class="add" id="addForm">
@@ -245,13 +249,23 @@ button:active{transform:translateY(1px)}
   <p>Conversions come from your own device's time zone database, so daylight saving is always current.
   Sunrise, sunset and the sky colours are computed from each city's latitude and longitude rather than
   fetched, and the page caches itself, so it keeps working with no connection. MIT licensed.</p>
+  <h2 class="how">How to use it</h2>
+  <ul class="howto">
+    <li><b>Reorder cities:</b> press and hold a city's ☆, then drag it up or down. Or tap <b>Reorder</b> and use ▲ ▼.</li>
+    <li><b>Set your base city:</b> tap its ☆. The clock and slider follow that city.</li>
+    <li><b>Pick a time:</b> drag across the hours, or tap the time and type one, like <i>3pm</i> or <i>15:30</i>.</li>
+    <li><b>Rename a city:</b> tap its name, say “Mom” or “HQ”.</li>
+    <li><b>Add or remove:</b> type a city or zone in the box below the list; tap × to remove one.</li>
+    <li><b>Share:</b> tap <b>Copy link</b> to send this exact view, or <b>Copy times</b> for a text summary.</li>
+    <li><b>Keep it on your phone:</b> add it to your home screen. It works offline.</li>
+  </ul>
   <div class="count">
     <a class="hits" href="https://hits.sh/danpune.github.io/timezones/" title="Total visits to this page"><img
       src="https://hits.sh/danpune.github.io/timezones.svg?style=for-the-badge&label=visits&color=1d4ed8&labelColor=14181d"
       alt="Total visits to this page" width="112" height="28"></a>
     <a href="https://github.com/danpune/timezones">View source</a>
     <a href="https://github.com/danpune/timezones/blob/main/LICENSE">MIT licence</a>
-    <span class="ver">build 2026.09.12-d</span>
+    <span class="ver">build 2026.09.12-e</span>
   </div>
 </footer>
 </main>
