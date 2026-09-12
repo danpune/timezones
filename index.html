@@ -175,9 +175,17 @@ body.reordering .city{transition:none}
 #sugg.up{top:auto;bottom:calc(100% + 4px)}
 #sugg .so{font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap}
 .legend{font-size:12px;color:var(--mut);display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-#overlap{font-size:12px;color:var(--tx);background:var(--panel);border:1px solid var(--line);
+#overlap,#dst{font-size:12px;color:var(--tx);background:var(--panel);border:1px solid var(--line);
   border-left:4px solid #16a34a;border-radius:8px;padding:9px 12px;margin-bottom:10px;box-shadow:var(--sh)}
 .acts{display:flex;gap:8px;margin:4px 0 12px;flex-wrap:wrap}
+#dst{border-left-color:#d97706}
+.prefs{display:flex;gap:8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.acts .seg button{border:0;border-radius:0;min-height:40px;padding:0 12px;color:var(--mut);background:none}
+.acts .seg button:first-child{border-radius:7px 0 0 7px}.acts .seg button:last-child{border-radius:0 7px 7px 0}
+.acts .seg button[aria-pressed="true"]{background:var(--acc);color:var(--bg)}
+.wx{display:inline-flex;align-items:center;gap:3px}
+.wx .wi{font-size:13px;line-height:1}
 .inst{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--tx);background:var(--panel);
   border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:8px;padding:9px 10px 9px 12px;margin-bottom:10px;box-shadow:var(--sh)}
 .inst span{flex:1}
@@ -199,7 +207,9 @@ body.reordering .city{transition:none}
 /* Phones: the state flag costs ~20px on the name line, and the clock column widens as the
    minutes change ("10:58 PM" is ~14px wider than "9:12 AM"). A one-step smaller name and clock
    and tighter gaps keep "San Francisco" whole at 375px at the widest time. */
-@media(max-width:420px){.name b{font-size:16px;gap:3px}.time b{font-size:20px}.top{gap:5px}.sf{height:12px}}
+/* The weather adds ~40px to the sunrise line; half-hour zones ("+10:30 from you UTC+5:30") then
+   need tighter spacing to stay on one line. */
+@media(max-width:420px){.name b{font-size:16px;gap:3px}.time b{font-size:20px}.top{gap:5px}.sf{height:12px}.sunrow{column-gap:5px}}
 @media(max-width:359px){.name b{font-size:16px}.time b{font-size:20px}}
 
 /* States: the file had none, so nothing answered the cursor or the keyboard. */
@@ -256,6 +266,7 @@ button:active{transform:translateY(1px)}
 </div>
 <div class="hint"><span>Drag the hours or tap the time to type one. Tap ☆ to set the base city, hold and drag it to reorder.</span><button id="reorder" type="button" aria-pressed="false">Reorder</button></div>
 <div id="overlap" role="status" hidden></div>
+<div id="dst" role="status" hidden></div>
 <div id="list"><div id="scrub" hidden></div></div>
 <form class="add" id="addForm" role="search">
   <div class="combo">
@@ -267,7 +278,7 @@ button:active{transform:translateY(1px)}
   <button type="submit">Add</button>
 </form>
 <div id="say" role="status" hidden></div>
-<div class="acts"><button id="copy" type="button">Copy times</button><button id="share" type="button">Copy link</button></div>
+<div class="acts"><button id="copy" type="button">Copy times</button><button id="share" type="button">Copy link</button><span class="prefs"><span class="seg" role="group" aria-label="Clock"><button type="button" data-h24="0">12h</button><button type="button" data-h24="1">24h</button></span><span class="seg" role="group" aria-label="Temperature"><button type="button" data-f="0">°C</button><button type="button" data-f="1">°F</button></span></span></div>
 <div class="legend"><span><i class="sw"></i>Real sunlight at each city</span><span><i class="wm"></i>Work hours</span></div>
 <footer>
   <h2>Why this exists</h2>
@@ -275,7 +286,8 @@ button:active{transform:translateY(1px)}
   whatever time it is where I am. No ads, no sign-up, no tracking.</p>
   <p>Conversions come from your own device's time zone database, so daylight saving is always current.
   Sunrise, sunset and the sky colours are computed from each city's latitude and longitude rather than
-  fetched, and the page caches itself, so it keeps working with no connection. MIT licensed.</p>
+  fetched, and the page caches itself, so it keeps working with no connection. Weather is the one thing
+  fetched, from Open-Meteo, so it needs a connection. MIT licensed.</p>
   <h2 class="how">How to use it</h2>
   <ul class="howto">
     <li><b>Reorder cities:</b> press and hold a city's ☆, then drag it up or down. Or tap <b>Reorder</b> and use ▲ ▼.</li>
@@ -284,7 +296,18 @@ button:active{transform:translateY(1px)}
     <li><b>Rename a city:</b> tap its name, say “Mom” or “HQ”.</li>
     <li><b>Add or remove:</b> start typing a city or country and pick from the list; tap × to remove one.</li>
     <li><b>Share:</b> tap <b>Copy link</b> to send this exact view, or <b>Copy times</b> for a text summary.</li>
+    <li><b>Clock and weather:</b> use <b>12h / 24h</b> and <b>°C / °F</b> under the cities. The weather is the forecast for the hour you are looking at.</li>
+    <li><b>Clock changes:</b> an orange note appears when a city moves its clocks for daylight saving within the next two weeks.</li>
     <li><b>Keep it on your phone:</b> add it to your home screen. It works offline.</li>
+  </ul>
+  <h2 class="how">What’s new</h2>
+  <ul class="howto">
+    <li><b>Sep 12:</b> 12 or 24-hour clock, weather in °C or °F, and a heads-up before clocks change.</li>
+    <li><b>Sep 12:</b> State flags for US states, Canadian provinces and Australian states.</li>
+    <li><b>Sep 12:</b> Search any city or country as you type (about 6,300 cities), with country flags.</li>
+    <li><b>Sep 12:</b> Works offline and installs on your home screen. More Indian cities, including Nellore.</li>
+    <li><b>Sep 12:</b> Drag to reorder (iPhone too), share links, copy times, rename cities, and the hours everyone is at work.</li>
+    <li><b>Sep 11:</b> First version: live clocks with real sunrise, sunset and sky colours for each city.</li>
   </ul>
   <div class="count">
     <a class="hits" href="https://hits.sh/danpune.github.io/timezones/" title="Total visits to this page"><img
@@ -293,7 +316,8 @@ button:active{transform:translateY(1px)}
     <a href="https://github.com/danpune/timezones">View source</a>
     <a href="https://github.com/danpune/timezones/blob/main/LICENSE">MIT licence</a>
     <a href="https://www.geonames.org/" title="City data licensed CC BY 4.0">Cities: GeoNames</a>
-    <span class="ver">build 2026.09.12-j</span>
+    <a href="https://open-meteo.com/" title="Weather data by Open-Meteo.com, CC BY 4.0">Weather: Open-Meteo</a>
+    <span class="ver">build 2026.09.12-k</span>
   </div>
 </footer>
 </main>
@@ -478,7 +502,8 @@ function place(q){
     const st=/^[A-Z0-9]{1,3}$/.test(f[4]||'')&&stKey(cc,f[4])?f[4]:'';
     try{new Intl.DateTimeFormat('en-US',{timeZone:z})}catch(e){return null}
     const c=COORDS[z]||[null,null],la=parseFloat(f[0]),lo=parseFloat(f[1]);
-    return{n:cut(nm,60),z,la:isFinite(la)?la:c[0],lo:isFinite(lo)?lo:c[1],cc,st,label};
+    const ok=Math.abs(la)<=90&&Math.abs(lo)<=180;   // NaN fails too; one bad pair used to sink every city's weather request
+    return{n:cut(nm,60),z,la:ok?la:c[0],lo:ok?lo:c[1],cc,st,label};
   }
   const lk=k.toLowerCase(),nk=norm(k).replace(/^the /,'');
   const name=Object.keys(PLACES).find(n=>n.toLowerCase()===lk)||ABBR[lk]||ZONEWORDS[lk];
@@ -649,6 +674,60 @@ $('tzLocal').textContent='You: '+HOME;
 // live = the page tracks the real clock. The slider only steps in 15s, so while live we
 // read Date.now() directly and let the slider follow along as a rough position indicator.
 let live=true,planMin=0;
+// The viewer's own clock format and units. Not part of a shared link: whoever opens it reads
+// times their own way. Defaults follow the device locale (en-GB says 24h, en-US says F).
+const pref=(()=>{let v=null;try{v=JSON.parse(localStorage.getItem('tzPref'))}catch(e){}v=v||{};
+  const o=new Intl.DateTimeFormat(undefined,{hour:'numeric'}).resolvedOptions();
+  return{h24:typeof v.h24==='boolean'?v.h24:o.hourCycle?/h2[34]/.test(o.hourCycle):o.hour12===false,
+         f:typeof v.f==='boolean'?v.f:/-US$/i.test(navigator.language||'')}})();
+function setPref(k,v){pref[k]=v;try{localStorage.setItem('tzPref',JSON.stringify(pref))}catch(e){}render()}
+const tfCache={};
+function tf(z){const k=z+'|'+pref.h24;return tfCache[k]||(tfCache[k]=new Intl.DateTimeFormat('en-US',{timeZone:z,hour:'numeric',minute:'2-digit',hourCycle:pref.h24?'h23':'h12'}))}
+
+// Weather from Open-Meteo (free, no key, CC BY 4.0). One request covers every city, hourly
+// from yesterday to a week out, so a planned time shows that hour's forecast, not today's.
+// Offline or out of range, the card keeps its sun/moon glyph. Fetched in C, converted here.
+const wx={};let wxBusy=false,wxFail=0;
+function wxKey(p){return (+p.la).toFixed(2)+','+(+p.lo).toFixed(2)}
+function wxLoad(){
+  if(wxBusy||Date.now()-wxFail<6e5)return;
+  const keys=[...new Set(state.places.filter(p=>p.la!=null).map(wxKey))].filter(k=>!wx[k]||Date.now()-wx[k].at>36e5);
+  if(!keys.length)return;
+  wxBusy=true;
+  fetch('https://api.open-meteo.com/v1/forecast?latitude='+keys.map(k=>k.split(',')[0]).join(',')+'&longitude='+keys.map(k=>k.split(',')[1]).join(',')
+    +'&hourly=temperature_2m,weather_code&past_days=1&forecast_days=7&timeformat=unixtime&timezone=GMT')
+    .then(r=>{if(!r.ok)throw new Error('weather '+r.status);return r.json()})
+    .then(j=>{(Array.isArray(j)?j:[j]).forEach((d,i)=>{const h=d&&d.hourly;
+        if(h&&h.time&&h.time.length)wx[keys[i]]={at:Date.now(),t0:h.time[0],temp:h.temperature_2m,code:h.weather_code}});
+      wxBusy=false;if(row===null&&tRow===null&&!dragging)render()})
+    .catch(()=>{wxBusy=false;wxFail=Date.now()});   // try again in 10 minutes, not on every repaint
+}
+function wxAt(p,t){
+  const d=p.la!=null&&wx[wxKey(p)];if(!d)return null;
+  const i=Math.round((t/1000-d.t0)/3600);
+  return d.temp[i]!=null&&d.code[i]!=null?{v:d.temp[i],c:d.code[i]}:null;
+}
+// WMO weather codes, grouped the way people talk about weather
+function wxLook(c,day){
+  return c===0?[day?'☀️':'🌙','Clear']:c===1?[day?'🌤️':'🌙','Mostly clear']
+    :c===2?[day?'⛅':'☁️','Partly cloudy']:c===3?['☁️','Cloudy']:c<=48?['🌫️','Fog']
+    :c<=57?['🌧️','Drizzle']:c<=67||(c>=80&&c<=82)?['🌧️','Rain']:c<=86?['🌨️','Snow']:['⛈️','Thunderstorm'];
+}
+
+// A daylight-saving change for zone z within a week before or two weeks after t, or null.
+// Daily steps find the day, then bisection finds the minute. Cached per zone and day.
+const dstCache={};
+function clockChange(t,z){
+  const key=z+'|'+ymd(t,z);if(key in dstCache)return dstCache[key];
+  const D=864e5;let a=t-7*D,oa=offMin(a,z);
+  for(let b=a+D;b<=t+14*D;a=b,b+=D){
+    const ob=offMin(b,z);
+    if(ob!==oa){let lo=a,hi=b;while(hi-lo>6e4){const m=Math.floor((lo+hi)/2);offMin(m,z)===oa?lo=m:hi=m}
+      return dstCache[key]={at:hi,d:ob-oa}}
+  }
+  return dstCache[key]=null;
+}
+const dstNote=$('dst');
 function syncControls(t){const bz=baseP().z;dateEl.value=ymd(t,bz);const w=new Date(wall(t,bz));
   planMin=w.getUTCHours()*60+w.getUTCMinutes();slider.value=Math.round(planMin/15)*15}
 // Accepts 3pm, 3 PM, 3:30pm, 15:30, 1530, 9, 09:15. Minute-of-day, or null.
@@ -669,7 +748,7 @@ function render(){
   now.className=live?'':'primary';
   now.innerHTML=live?'<span class="dot"></span>Live':'Back to now';
   const baseDay=ymd(t,bz);
-  if(document.activeElement!==sliderT){sliderT.value=new Intl.DateTimeFormat('en-US',{timeZone:bz,hour:'numeric',minute:'2-digit'}).format(t);sliderT.classList.remove('bad')}
+  if(document.activeElement!==sliderT){sliderT.value=tf(bz).format(t);sliderT.classList.remove('bad')}
   const hours=[];for(let h=0;h<24;h++)hours.push(instantAt(dateEl.value,h*60,bz));
   const curH=hourIn(t,bz),wide=innerWidth>=400;
   const ae=document.activeElement;                       // a repaint must not steal the keyboard
@@ -683,12 +762,14 @@ function render(){
     const z=p.z,on=p.n===state.base;
     const day=ymd(t,z);const dd=Math.round((Date.parse(day)-Date.parse(baseDay))/864e5);
     const has=p.la!=null,st=has?sunTimes(t,p):null,alt=has?sunAlt(t,p.la,p.lo):null,up=alt!==null&&alt>=H0;
-    const hm=x=>new Intl.DateTimeFormat('en-US',{timeZone:z,hour:'numeric',minute:'2-digit'}).format(x);
+    const hm=x=>tf(z).format(x);
+    const w=wxAt(p,t),look=w&&wxLook(w.c,up);
+    const glyph=w?`<span class="wx" title="${look[1]}"><span class="wi" aria-hidden="true">${look[0]}</span><b aria-hidden="true">${Math.round(pref.f?w.v*9/5+32:w.v)}°</b><span class="sr">${Math.round(pref.f?w.v*9/5+32:w.v)}°${pref.f?'F':'C'}, ${look[1].toLowerCase()}, </span></span>`:(up?SUN_SVG:MOON_SVG);
     const el=document.createElement('div');el.className='city'+(on?' base':'');
     if(has){const k=sky(alt);el.style.setProperty('--sky',k);el.style.setProperty('--wash',k+'2b')}
     const sunrow=!st?`<div class="sunrow"><b class="rel">${fromYou(t,z)}</b><i>${offset(t,z)}</i></div>`
-      :st.polar?`<div class="sunrow"><b class="rel">${fromYou(t,z)}</b><i>${offset(t,z)}</i>${up?SUN_SVG:MOON_SVG}<span><b>${st.polar}</b></span></div>`
-      :`<div class="sunrow"><b class="rel">${fromYou(t,z)}</b><i>${offset(t,z)}</i>${up?SUN_SVG:MOON_SVG}<span class="sr">${up?'daytime':'night'}, </span>${
+      :st.polar?`<div class="sunrow"><b class="rel">${fromYou(t,z)}</b><i>${offset(t,z)}</i>${glyph}<span><b>${st.polar}</b></span></div>`
+      :`<div class="sunrow"><b class="rel">${fromYou(t,z)}</b><i>${offset(t,z)}</i>${glyph}<span class="sr">${up?'daytime':'night'}, </span>${
           st.rise?`<span><span class="sr">Sunrise </span>↑ <b>${hm(Math.round(st.rise/6e4)*6e4)}</b></span>`:''}${
           st.set?`<span><span class="sr">Sunset </span>↓ <b>${hm(Math.round(st.set/6e4)*6e4)}</b></span>`:''}${
           st.set?'':'<span><b>no sunset</b></span>'}${
@@ -704,7 +785,7 @@ function render(){
       ${sunrow}
       <div class="grid">${hours.map((ht,j)=>{
         const h=hourIn(ht,z),wk=(h>=9&&h<18)?' wk':'',sel=j===curH;
-        const lbl=(sel||h%6===0)?(h===0?(wide?'12a':'12'):h<12?h:h===12?(wide?'12p':'12'):h-12):'';
+        const lbl=(sel||h%6===0)?(pref.h24?h:h===0?(wide?'12a':'12'):h<12?h:h===12?(wide?'12p':'12'):h-12):'';
         if(!has)return `<div class="${cls(h)}${wk}${sel?' cur':''}" data-h="${j}">${lbl}</div>`;
         const a=sunAlt(ht,p.la,p.lo);
         return `<div class="${wk}${sel?' cur':''}" data-h="${j}" style="background:${sky(a)};color:${inkOn(a)}">${lbl}</div>`;
@@ -720,11 +801,32 @@ function render(){
   if(state.places.length>1){
     if(okCols.length){
       const a=hours[okCols[0]],b=hours[okCols[okCols.length-1]+1]||hours[23];
-      const f=x=>new Intl.DateTimeFormat('en-US',{timeZone:bz,hour:'numeric',minute:'2-digit'}).format(x);
+      const f=x=>tf(bz).format(x);
       overlap.innerHTML=`<b>${okCols.length}h everyone is at work</b> · ${f(a)}–${f(b)} in ${esc(shown(baseP()))}`;
     } else overlap.innerHTML='<b>No hour suits everyone</b> · nobody is at work at the same time';
     overlap.hidden=false;
   } else overlap.hidden=true;
+  // Heads-up before clocks change: the week the UK has changed and the US has not is when
+  // meetings get booked an hour off. Cities changing the same way on the same day are grouped.
+  // US zones change hours apart on the same date, so tense is part of the group: on the night
+  // itself New York has already gone back while San Francisco has not.
+  const cs=state.places.map(p=>clockChange(t,p.z)),ch=new Map();
+  state.places.forEach((p,i)=>{const c=cs[i];if(!c)return;
+    const when=new Intl.DateTimeFormat('en-US',{timeZone:p.z,weekday:'short',month:'short',day:'numeric'}).format(c.at);
+    const past=c.at<=t,k=when+'|'+c.d+'|'+past;
+    if(!ch.has(k))ch.set(k,{when,at:c.at,day:ymd(c.at,p.z),d:c.d,past,ns:[]});ch.get(k).ns.push(esc(shown(p)))});
+  if(ch.size){
+    const gs=[...ch.values()].sort((a,b)=>a.at-b.at||(a.day<b.day?-1:1)),amt=d=>Math.abs(d)%60?Math.abs(d)+' min':Math.abs(d)/60+'h';
+    // Differences only change if some city does not shift, shifts by a different amount, or on
+    // another day. Copenhagen and Nuuk change at the same instant under different local dates.
+    const shift=cs.some(c=>!c||c.d!==cs[0].d||Math.abs(c.at-cs[0].at)>864e5);
+    dstNote.innerHTML='<b>Clocks change</b> · '+gs.map(g=>g.ns.join(', ')+' '+(g.past?'went':g.ns.length>1?'go':'goes')+' '+(g.d>0?'forward ':'back ')+amt(g.d)+' on '+g.when).join(' · ')
+      +(shift?'. The time differences between these cities change too.':'');
+    dstNote.hidden=false;
+  } else dstNote.hidden=true;
+  for(const b of document.querySelectorAll('[data-h24]'))b.setAttribute('aria-pressed',String((b.dataset.h24==='1')===pref.h24));
+  for(const b of document.querySelectorAll('[data-f]'))b.setAttribute('aria-pressed',String((b.dataset.f==='1')===pref.f));
+  wxLoad();
   const marks=[...list.querySelectorAll('.grid .cur')];
   if(marks.length){
     const lr=list.getBoundingClientRect(),a=marks[0].getBoundingClientRect(),b=marks[marks.length-1].getBoundingClientRect();
@@ -916,7 +1018,7 @@ $('copy').addEventListener('click',()=>{
   const baseDay=ymd(t,bz),w=Math.max(...state.places.map(p=>shown(p).length));
   const lines=state.places.map(p=>{
     const dd=Math.round((Date.parse(ymd(t,p.z))-Date.parse(baseDay))/864e5);
-    return shown(p).padEnd(w)+'  '+new Intl.DateTimeFormat('en-US',{timeZone:p.z,hour:'numeric',minute:'2-digit'}).format(t)+(dd?' ('+(dd>0?'+':'')+dd+'d)':'');
+    return shown(p).padEnd(w)+'  '+tf(p.z).format(t)+(dd?' ('+(dd>0?'+':'')+dd+'d)':'');
   });
   put(day+'\n'+lines.join('\n'),$('copy'),'Copied');
 });
@@ -929,6 +1031,10 @@ $('reorder').addEventListener('click',()=>{
   if(on){const first=list.querySelector('.mv:not([disabled])');if(first)first.focus()}
 });
 $('share').addEventListener('click',()=>{writeHash();put(location.href,$('share'),'Link copied')});
+document.querySelector('.acts').addEventListener('click',e=>{
+  const b=e.target.closest('[data-h24],[data-f]');if(!b)return;
+  if(b.dataset.h24!=null)setPref('h24',b.dataset.h24==='1');else setPref('f',b.dataset.f==='1');
+});
 now.addEventListener('click',setNow);
 slider.addEventListener('input',()=>{live=false;planMin=+slider.value;render()});
 dateEl.addEventListener('change',()=>{live=false;render()});
