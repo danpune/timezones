@@ -333,9 +333,7 @@ function load(){
       const ps=v.zones.map(place).filter(Boolean);
       if(ps.length)return{places:ps,base:(place(v.base)||ps[0]).n};
     }}catch(e){}
-  const ps=DEFAULT.map(place);
-  if(!ps.some(p=>p.z===HOME)){const me=place(HOME);if(me)ps.unshift(me)}
-  return{places:ps,base:ps[0].n};
+  const ps=defaultPlaces();return{places:ps,base:ps[0].n};
 }
 function baseP(){return state.places.find(p=>p.n===state.base)||state.places[0]}
 const shown=p=>p.label||p.n;
@@ -349,20 +347,40 @@ function suggest(q){
          .filter((v,i,a)=>a.indexOf(v)===i).slice(0,4);
 }
 function save(){try{localStorage.setItem('tz1',JSON.stringify(state))}catch(e){}writeHash()}
-// Readable, hand-typable, and the only way this page can leave the phone.
+// Readable and hand-typable: the city list is the hash itself, spaces are underscores
+// (the way IANA already spells them), and nothing is written that can be inferred.
+const tok=n=>n.replace(/ /g,'_');
+const untok=x=>{const v=decodeURIComponent(x);return v.includes('/')?v:v.replace(/_/g,' ')};
+function defaultPlaces(){
+  const ps=DEFAULT.map(place);
+  if(!ps.some(p=>p.z===HOME)){const me=place(HOME);if(me)ps.unshift(me)}
+  return ps;
+}
 function writeHash(){
-  const c=state.places.map(p=>encodeURIComponent(p.n+(p.label?'~'+p.label:''))).join(',');
-  let h='#c='+c+'&b='+encodeURIComponent(state.base);
+  const cities=state.places.map(p=>tok(p.n+(p.label?'~'+p.label:'')));
+  let h='#'+cities.join(',');
+  if(state.base!==state.places[0].n)h+='&b='+tok(state.base);   // first city is the base by default
   if(!live)h+='&d='+dateEl.value+'&t='+String(Math.floor(planMin/60)).padStart(2,'0')+':'+String(planMin%60).padStart(2,'0');
-  try{history.replaceState(null,'',h)}catch(e){}
+  // an untouched default view deserves a clean address bar
+  const plain=live&&state.base===state.places[0].n
+    &&cities.join(',')===defaultPlaces().map(p=>tok(p.n)).join(',');
+  try{history.replaceState(null,'',plain?location.pathname+location.search:h)}catch(e){}
 }
 function readHash(){
   const h=location.hash.slice(1);if(!h)return null;
-  const q={};for(const kv of h.split('&')){const i=kv.indexOf('=');if(i>0)q[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1))}
-  if(!q.c)return null;
-  const ps=q.c.split(',').map(x=>place(decodeURIComponent(x))).filter(Boolean);
+  const q={};let bare=null;
+  for(const kv of h.split('&')){
+    const i=kv.indexOf('=');
+    if(i<0){if(bare===null)bare=kv;continue}
+    q[kv.slice(0,i)]=kv.slice(i+1);
+  }
+  const raw=bare!==null?bare:q.c;        // q.c keeps links shared before this change working
+  if(!raw)return null;
+  const ps=raw.split(',').map(x=>place(untok(x))).filter(Boolean);
   if(!ps.length)return null;
-  return {places:ps, base:(ps.find(p=>p.n===q.b)||ps[0]).n, d:q.d||null, t:q.t||null};
+  const b=q.b?untok(q.b):null;
+  return {places:ps, base:(b&&ps.find(p=>p.n===b)||ps[0]).n,
+          d:q.d?decodeURIComponent(q.d):null, t:q.t?decodeURIComponent(q.t):null};
 }
 
 // --- time math (all native Intl) ---
