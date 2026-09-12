@@ -241,7 +241,20 @@ function fmt(zone){return partsCache[zone]||(partsCache[zone]=new Intl.DateTimeF
 // wall-clock time in `zone` at instant t, expressed as a UTC ms number
 function wall(t,zone){const p={};for(const x of fmt(zone).formatToParts(t))p[x.type]=x.value;return Date.UTC(+p.year,p.month-1,+p.day,+p.hour,+p.minute,+p.second)}
 // instant when wall clock in `zone` reads date d (yyyy-mm-dd) at `min` minutes; two passes handle DST edges
-function instantAt(d,min,zone){const [y,m,dd]=d.split('-').map(Number);const want=Date.UTC(y,m-1,dd,0,min);let t=want;for(let i=0;i<2;i++)t=want-(wall(t,zone)-t);return t}
+function instantAt(d,min,zone){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d))d=ymd(Date.now(),zone); // a date input can be cleared
+  const [y,m,dd]=d.split('-').map(Number);
+  const want=Date.UTC(y,m-1,dd,0,min);
+  const t1=want-(wall(want,zone)-want),t2=want-(wall(t1,zone)-t1);
+  if(wall(t2,zone)===want)return t2;
+  // No fixed point: this wall time is inside a spring-forward gap and never happens.
+  // Collapse the whole gap onto the instant the clock jumped, so scrubbing the slider
+  // through it is non-decreasing instead of replaying the previous hour.
+  let lo=Math.min(t1,t2),hi=Math.max(t1,t2);
+  const off=x=>Math.round((wall(x,zone)-x)/60000),o0=off(lo); // whole minutes: wall() truncates to seconds
+  for(let i=0;i<42;i++){const m=Math.floor((lo+hi)/2);if(m===lo)break;off(m)===o0?lo=m:hi=m}
+  return hi;
+}
 function ymd(t,zone){const w=new Date(wall(t,zone));return w.toISOString().slice(0,10)}
 function hourIn(t,zone){return new Date(wall(t,zone)).getUTCHours()}
 function cls(h){return h>=9&&h<18?'w':(h>=7&&h<9)||(h>=18&&h<22)?'e':''}
@@ -288,7 +301,11 @@ function render(){
     if(has){const k=sky(alt);el.style.setProperty('--sky',k);el.style.setProperty('--wash',k+'2b')}
     const sunrow=!st?`<div class="sunrow"><b class="rel">${fromYou(t,z)}</b><i>${offset(t,z)}</i></div>`
       :st.polar?`<div class="sunrow"><b class="rel">${fromYou(t,z)}</b><i>${offset(t,z)}</i>${up?SUN_SVG:MOON_SVG}<span><b>${st.polar}</b></span></div>`
-      :`<div class="sunrow"><b class="rel">${fromYou(t,z)}</b><i>${offset(t,z)}</i>${SUN_SVG}<span>↑ <b>${hm(st.rise)}</b></span><span>↓ <b>${hm(st.set)}</b></span></div>`;
+      :`<div class="sunrow"><b class="rel">${fromYou(t,z)}</b><i>${offset(t,z)}</i>${SUN_SVG}${
+          st.rise?`<span>↑ <b>${hm(st.rise)}</b></span>`:''}${
+          st.set?`<span>↓ <b>${hm(st.set)}</b></span>`:''}${
+          st.set?'':'<span><b>no sunset</b></span>'}${
+          st.rise?'':'<span><b>no sunrise</b></span>'}</div>`;
     el.innerHTML=`<div class="top">
       <button class="ic${on?' on':''}" data-base="${i}" aria-label="Set ${p.n} as base">${on?'★':'☆'}</button>
       <div class="name" title="${z} · ${offset(t,z)}"><b><em>${p.n}</em>${has?(up?SUN_SVG:MOON_SVG):''}</b></div>
@@ -311,8 +328,11 @@ list.addEventListener('click',e=>{
   if(b){ // keep the same instant, re-express it in the new base
     const t=live?Date.now():instantAt(dateEl.value,+slider.value,baseP().z);
     state.base=state.places[+b.dataset.base].n;syncControls(t);save();render()}
-  else if(d){if(state.places.length>1){const gone=state.places.splice(+d.dataset.del,1)[0];
-    if(state.base===gone.n)state.base=state.places[0].n;save();render()}}
+  else if(d){if(state.places.length>1){
+    const t=live?Date.now():instantAt(dateEl.value,+slider.value,baseP().z);
+    const gone=state.places.splice(+d.dataset.del,1)[0];
+    if(state.base===gone.n){state.base=state.places[0].n;syncControls(t)} // hold the instant
+    save();render()}}
   else if(h){live=false;slider.value=h.dataset.h*60;render()}
 });
 $('addForm').addEventListener('submit',e=>{
