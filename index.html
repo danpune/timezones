@@ -670,7 +670,8 @@ list.addEventListener('pointerdown',e=>{
   if(g){
     if(e.button!==undefined&&e.button!==0)return;       // right-click must not start a drag
     row=+g.dataset.base;rowMoved=false;rowY=e.clientY;rowEl=g.closest('.city');
-    e.preventDefault();                                  // or the browser starts selecting text
+    // NOT preventDefault here: on iOS that suppresses the follow-up click, and a tap
+    // on the ★ has to keep setting the base city. Suppression happens on the first move.
     try{g.setPointerCapture(e.pointerId)}catch(err){try{list.setPointerCapture(e.pointerId)}catch(_){}}
     return}
   const c=e.target.closest&&e.target.closest('.grid div');if(!c)return;
@@ -681,6 +682,7 @@ list.addEventListener('pointerdown',e=>{
 list.addEventListener('pointermove',e=>{
   if(row!==null){
     if(!rowMoved&&Math.abs(e.clientY-rowY)<6)return;   // a tap must not become a drag
+    if(e.cancelable)e.preventDefault();                 // now it IS a drag: no scroll, no selection
     if(!rowMoved){rowMoved=true;document.body.classList.add('reordering');rowEl.classList.add('drag')}
     const cards=[...list.querySelectorAll('.city')];
     let to=cards.findIndex(c=>{const r=c.getBoundingClientRect();return e.clientY<r.top+r.height/2});
