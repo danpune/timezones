@@ -25,17 +25,21 @@
   --work:#14532d;--work-tx:#bbf7d0;--edge:#713f12;--edge-tx:#fde68a;--night:#262a33;--night-tx:#9ca3af;
 }}
 html{-webkit-text-size-adjust:100%}
-body{background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+::selection{background:rgba(29,78,216,.16)}
+body{background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 main{max-width:720px;margin:0 auto;padding:12px}
 h1{font-size:20px;font-weight:700;margin-bottom:10px;padding-bottom:9px;display:flex;align-items:center;
   justify-content:space-between;gap:10px;letter-spacing:-.01em;
   background-image:linear-gradient(90deg,#232c47,#34416c,#86617d,#c47b56,#ecc07f,#b9d9ed,#8dc3e9);
   background-repeat:no-repeat;background-size:100% 3px;background-position:0 100%}
-h1 small{font-size:12px;font-weight:400;color:var(--mut)}
-.bar{position:sticky;top:0;z-index:2;background:var(--bg);padding:6px 0 10px}
+.you{font-size:12px;font-weight:500;color:var(--mut);background:var(--panel);border:1px solid var(--line);
+  border-radius:999px;padding:5px 11px;white-space:nowrap;flex:none}
+.bar{position:sticky;top:0;z-index:2;background:var(--bg);padding:6px 0 10px;
+  border-bottom:1px solid transparent;transition:border-color .18s ease,box-shadow .18s ease}
+.bar.stuck{border-bottom-color:var(--line);box-shadow:0 10px 16px -14px rgba(16,24,40,.75)}
 .ctl{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-.ctl input[type=date]{flex:1;min-height:44px;font:inherit;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--tx)}
-button{min-height:44px;padding:0 14px;font:inherit;font-weight:600;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--acc);cursor:pointer}
+.ctl input[type=date]{flex:1;min-height:44px;font:inherit;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--tx)}
+button{min-height:44px;padding:0 16px;font:inherit;font-weight:600;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--acc);cursor:pointer}
 button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
 #now{min-width:112px;display:flex;align-items:center;justify-content:center;gap:6px}
 #now .dot{width:8px;height:8px;border-radius:50%;background:#16a34a;flex:none;animation:pulse 2s ease-in-out infinite}
@@ -53,7 +57,7 @@ button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
 #scrub{position:absolute;pointer-events:none;z-index:1;background:var(--acc);opacity:.55;border-radius:2px}
 #scrub::before{content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);
   width:14px;height:14px;border-radius:50%;background:var(--acc);box-shadow:0 1px 4px rgba(0,0,0,.4)}
-.city{background:var(--panel);background-image:linear-gradient(100deg,var(--wash,transparent),transparent 55%);border:1px solid var(--line);border-radius:12px;padding:11px 12px 13px;margin-bottom:9px;box-shadow:var(--sh);box-shadow:inset 4px 0 0 var(--sky,transparent);overflow:hidden}
+.city{background:var(--panel);background-image:linear-gradient(100deg,var(--wash,transparent),transparent 55%);border:1px solid var(--line);border-radius:12px;padding:11px 12px 13px;margin-bottom:8px;box-shadow:var(--sh);box-shadow:inset 4px 0 0 var(--sky,transparent);overflow:hidden}
 .city.base{border-color:var(--acc);box-shadow:inset 4px 0 0 var(--sky,transparent),0 0 0 1px var(--acc),var(--sh)}
 .top{display:flex;align-items:center;gap:6px}
 .name{flex:1;min-width:0}
@@ -68,19 +72,19 @@ button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
 .sunrow b{font-weight:600;color:var(--tx);font-variant-numeric:tabular-nums}
 .sunrow i{font-style:normal;opacity:.55}
 .sunrow .rel{color:var(--acc);font-weight:700}
-footer{margin:16px 0 28px;font-size:13.5px;color:var(--mut);line-height:1.6;
+footer{margin:16px 0 28px;font-size:13px;color:var(--mut);line-height:1.6;
   background:var(--panel);border:1px solid var(--line);border-radius:12px;
   padding:16px 18px 14px;box-shadow:var(--sh)}
 footer h2{font-size:15px;color:var(--tx);margin-bottom:7px;letter-spacing:-.01em}
 footer p{margin-bottom:10px;max-width:62ch}
 footer .count{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
   margin-top:14px;padding-top:13px;border-top:1px solid var(--line)}
-footer .count .lab{font-size:12.5px;color:var(--mut)}
+footer .count .lab{font-size:12px;color:var(--mut)}
 footer img{height:22px;width:auto;vertical-align:middle}
-footer a{color:var(--acc);text-decoration:none;font-weight:600;font-size:12.5px}
+footer a{color:var(--acc);text-decoration:none;font-weight:600;font-size:12px}
 footer a:hover{text-decoration:underline}
 .time{text-align:right;font-variant-numeric:tabular-nums}
-.time b{font-size:22px;display:block;line-height:1.1}
+.time b{font-size:22px;display:block;line-height:1.08;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .time span{font-size:12px;color:var(--mut);white-space:nowrap}
 .time .d{font-size:11px}
 .time .d{color:var(--acc);font-weight:600}
@@ -98,15 +102,15 @@ body.reordering .city{transition:none}
 .grid .e{background:var(--edge);color:var(--edge-tx)}
 .grid .wk{box-shadow:inset 0 -3px 0 rgba(15,110,50,.95)}
 .grid .cur{outline:3px solid currentColor;outline-offset:-3px;font-weight:800;z-index:2}
-.add{display:flex;gap:8px;margin:12px 0}
-.add input{flex:1;min-height:44px;font:inherit;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--tx)}
+.add{display:flex;gap:8px;margin:12px 0 8px}
+.add input{flex:1;min-height:44px;font:inherit;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--tx)}
 .legend{font-size:12px;color:var(--mut);display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-#overlap{font-size:12.5px;color:var(--tx);background:var(--panel);border:1px solid var(--line);
-  border-left:4px solid #16a34a;border-radius:10px;padding:9px 12px;margin-bottom:10px;box-shadow:var(--sh)}
+#overlap{font-size:12px;color:var(--tx);background:var(--panel);border:1px solid var(--line);
+  border-left:4px solid #16a34a;border-radius:8px;padding:9px 12px;margin-bottom:10px;box-shadow:var(--sh)}
 .acts{display:flex;gap:8px;margin:4px 0 12px;flex-wrap:wrap}
-#say{font-size:12.5px;color:var(--tx);background:var(--panel);border:1px solid var(--line);
-  border-left:4px solid #d97706;border-radius:10px;padding:9px 12px;margin:-4px 0 10px}
-#say button{min-height:32px;padding:0 10px;font-size:12.5px;color:var(--acc);margin:2px 0}
+#say{font-size:12px;color:var(--tx);background:var(--panel);border:1px solid var(--line);
+  border-left:4px solid #d97706;border-radius:8px;padding:9px 12px;margin:-4px 0 10px}
+#say button{min-height:32px;padding:0 10px;font-size:12px;color:var(--acc);margin:2px 0}
 .acts button{font-size:13px;padding:0 14px;min-height:40px;color:var(--acc)}
 .grid .ok{box-shadow:inset 0 3px 0 rgba(22,163,74,.95),inset 0 -3px 0 rgba(15,110,50,.95)}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px}
@@ -157,7 +161,7 @@ button:active{transform:translateY(1px)}
 </head>
 <body>
 <main>
-<h1>Time Zones <small id="tzLocal"></small></h1>
+<h1>Time Zones <span class="you" id="tzLocal"></span></h1>
 <div class="bar">
   <div class="ctl">
     <input type="date" id="date" aria-label="Date">
@@ -608,6 +612,9 @@ sliderT.addEventListener('blur',()=>{
 
 // the band is positioned from measured geometry, so it has to be re-measured on reflow
 addEventListener('resize',render);
+// separate the sticky bar from the list only once it actually overlaps content
+const bar=document.querySelector('.bar');
+addEventListener('scroll',()=>bar.classList.toggle('stuck',scrollY>4),{passive:true});
 
 // tick the clock: check often, repaint only when the displayed minute actually rolls over
 let lastMin=-1;
