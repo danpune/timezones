@@ -79,6 +79,10 @@ footer img{height:20px;width:auto}
 .time .d{font-size:11px}
 .time .d{color:var(--acc);font-weight:600}
 .ic{min-width:44px;min-height:44px;margin:0 -5px;padding:0;font-size:18px;border:0;background:none;color:var(--mut);flex:none}
+.ic[data-base]{cursor:grab;touch-action:none}
+.ic[data-base]:active{cursor:grabbing}
+.city.drag{opacity:.97;box-shadow:var(--shh);transform:scale(1.012);z-index:3;position:relative}
+.city.drag .ic[data-base]{color:var(--acc)}
 .ic.on{color:var(--acc)}
 .grid{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:1px;margin-top:9px;border-radius:8px;overflow:hidden;touch-action:pan-y}
 .grid div{font-size:11px;text-align:center;padding:10px 0 11px;background:var(--night);color:var(--night-tx);cursor:pointer;line-height:1;min-height:30px;position:relative}
@@ -89,6 +93,14 @@ footer img{height:20px;width:auto}
 .add{display:flex;gap:8px;margin:12px 0}
 .add input{flex:1;min-height:44px;font:inherit;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--tx)}
 .legend{font-size:12px;color:var(--mut);display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+#overlap{font-size:12.5px;color:var(--tx);background:var(--panel);border:1px solid var(--line);
+  border-left:4px solid #16a34a;border-radius:10px;padding:9px 12px;margin-bottom:10px;box-shadow:var(--sh)}
+.acts{display:flex;gap:8px;margin:4px 0 12px;flex-wrap:wrap}
+#say{font-size:12.5px;color:var(--tx);background:var(--panel);border:1px solid var(--line);
+  border-left:4px solid #d97706;border-radius:10px;padding:9px 12px;margin:-4px 0 10px}
+#say button{min-height:32px;padding:0 10px;font-size:12.5px;color:var(--acc);margin:2px 0}
+.acts button{font-size:13px;padding:0 14px;min-height:40px;color:var(--acc)}
+.grid .ok{box-shadow:inset 0 3px 0 rgba(22,163,74,.95),inset 0 -3px 0 rgba(15,110,50,.95)}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px}
 .legend .sw{width:46px;background:linear-gradient(90deg,#0d1430,#7a4f6b,#e08b3c,#a9cfe8)}
 .legend .wm{width:14px;background:transparent;box-shadow:inset 0 -3px 0 rgba(22,163,74,.9);border:1px solid var(--line)}
@@ -148,13 +160,16 @@ button:active{transform:translateY(1px)}
     <input class="t" id="sliderT" type="text" inputmode="text" autocomplete="off" spellcheck="false" aria-label="Time in the base city — type one, e.g. 3pm">
   </div>
 </div>
-<div class="hint">Drag the hours, or tap the time to type one. ★ picks the base city.</div>
+<div class="hint">Drag the hours, or tap the time to type one. ★ picks the base city — drag it to reorder.</div>
+<div id="overlap" hidden></div>
 <div id="list"><div id="scrub" hidden></div></div>
 <form class="add" id="addForm">
   <input id="addInput" list="tzList" placeholder="Add city or zone (e.g. Tokyo, Berlin, Asia/Dubai)" autocomplete="off">
   <datalist id="tzList"></datalist>
   <button type="submit">Add</button>
 </form>
+<div id="say" hidden></div>
+<div class="acts"><button id="copy" type="button">Copy times</button><button id="share" type="button">Copy link</button></div>
 <div class="legend"><span><i class="sw"></i>Real sunlight at each city</span><span><i class="wm"></i>Work hours</span></div>
 <footer>
   <h2>Why this exists</h2>
@@ -207,6 +222,19 @@ const ABBR={'sfo':'San Francisco','sf':'San Francisco','nyc':'New York','ny':'Ne
  'bom':'Mumbai','blr':'Bangalore','del':'Delhi','lhr':'London','jfk':'New York','ord':'Chicago',
  'dfw':'Dallas','sea':'Seattle','yyz':'Toronto','hkg':'Hong Kong','nrt':'Tokyo','syd':'Sydney','dxb':'Dubai'};
 const DEFAULT=['Austin','San Francisco','New York','Mumbai','London'];
+// What people type when they don't know IANA ids. Reviews are full of one-star
+// "typed a city, got nothing" complaints, and this is most of the fix.
+const ZONEWORDS={
+ 'eastern time':'New York','eastern':'New York','et':'New York','est':'New York','edt':'New York',
+ 'central time':'Chicago','central':'Chicago','ct':'Chicago','cst':'Chicago','cdt':'Chicago',
+ 'mountain time':'Denver','mountain':'Denver','mt':'Denver','mst':'Denver','mdt':'Denver',
+ 'pacific time':'Los Angeles','pacific':'Los Angeles','pt':'Los Angeles','pst':'Los Angeles','pdt':'Los Angeles',
+ 'india standard time':'Mumbai','ist':'Mumbai','india':'Mumbai',
+ 'gmt':'London','bst':'London','uk time':'London','britain':'London','england':'London',
+ 'cet':'Paris','cest':'Paris','central european time':'Paris',
+ 'jst':'Tokyo','japan':'Tokyo','aest':'Sydney','aedt':'Sydney','australia':'Sydney',
+ 'sgt':'Singapore','hkt':'Hong Kong','kst':'Seoul','gst':'Dubai','brt':'Sao Paulo','nzst':'Auckland','nzdt':'Auckland'
+};
 const ALL=(Intl.supportedValuesOf?Intl.supportedValuesOf('timeZone'):Object.values(PLACES).map(v=>v[0]));
 
 // Latitude/longitude per zone, from the public-domain tzdata zone.tab that ships with the OS.
@@ -268,28 +296,60 @@ const SUN_SVG='<svg class="gl sun" viewBox="0 0 24 24" aria-hidden="true"><circl
 const MOON_SVG='<svg class="gl moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.8A8.6 8.6 0 019.2 3.5a8.6 8.6 0 1011.3 11.3z"/></svg>';
 
 // Resolve what the user typed into {n:name, z:zone, la, lo}. Known city first, then any IANA zone.
+const HOME=Intl.DateTimeFormat().resolvedOptions().timeZone;
 function place(q){
   if(!q)return null;
-  const k=q.trim(),lk=k.toLowerCase();
-  const name=Object.keys(PLACES).find(n=>n.toLowerCase()===lk)||ABBR[lk];
-  if(name){const v=PLACES[name];return{n:name,z:v[0],la:v[1],lo:v[2]}}
+  let k=q.trim(),label=null;
+  const tilde=k.indexOf('~');if(tilde>0){label=k.slice(tilde+1);k=k.slice(0,tilde)}
+  const lk=k.toLowerCase();
+  const name=Object.keys(PLACES).find(n=>n.toLowerCase()===lk)||ABBR[lk]||ZONEWORDS[lk];
+  if(name){const v=PLACES[name];return{n:name,z:v[0],la:v[1],lo:v[2],label}}
   const z=ALL.find(x=>x.toLowerCase()===lk)||ALL.find(x=>x.toLowerCase().includes(lk.replace(/ /g,'_')));
   if(!z)return null;
   const c=COORDS[z]||COORDS[LEGACY[z]]||[null,null];
-  return{n:z.split('/').pop().replace(/_/g,' '),z,la:c[0],lo:c[1]};
+  return{n:z.split('/').pop().replace(/_/g,' '),z,la:c[0],lo:c[1],label};
 }
 let state=load();
 function load(){
+  const fromUrl=readHash();
+  if(fromUrl)return {places:fromUrl.places,base:fromUrl.base};
   try{const v=JSON.parse(localStorage.getItem('tz1'));
     if(v&&v.places&&v.places.length)return v;
     if(v&&v.zones&&v.zones.length){ // migrate the old zone-only format
       const ps=v.zones.map(place).filter(Boolean);
       if(ps.length)return{places:ps,base:(place(v.base)||ps[0]).n};
     }}catch(e){}
-  const ps=DEFAULT.map(place);return{places:ps,base:ps[0].n};
+  const ps=DEFAULT.map(place);
+  if(!ps.some(p=>p.z===HOME)){const me=place(HOME);if(me)ps.unshift(me)}
+  return{places:ps,base:ps[0].n};
 }
 function baseP(){return state.places.find(p=>p.n===state.base)||state.places[0]}
-function save(){try{localStorage.setItem('tz1',JSON.stringify(state))}catch(e){}}
+const shown=p=>p.label||p.n;
+// Suggest near-misses instead of a dead-end alert.
+function suggest(q){
+  const lk=q.trim().toLowerCase();if(!lk)return[];
+  const hit=n=>n.toLowerCase().includes(lk);
+  return [...Object.keys(PLACES).filter(hit),
+          ...Object.keys(ZONEWORDS).filter(hit).map(k=>ZONEWORDS[k]),
+          ...ALL.filter(z=>z.toLowerCase().replace(/_/g,' ').includes(lk))]
+         .filter((v,i,a)=>a.indexOf(v)===i).slice(0,4);
+}
+function save(){try{localStorage.setItem('tz1',JSON.stringify(state))}catch(e){}writeHash()}
+// Readable, hand-typable, and the only way this page can leave the phone.
+function writeHash(){
+  const c=state.places.map(p=>encodeURIComponent(p.n+(p.label?'~'+p.label:''))).join(',');
+  let h='#c='+c+'&b='+encodeURIComponent(state.base);
+  if(!live)h+='&d='+dateEl.value+'&t='+String(Math.floor(planMin/60)).padStart(2,'0')+':'+String(planMin%60).padStart(2,'0');
+  try{history.replaceState(null,'',h)}catch(e){}
+}
+function readHash(){
+  const h=location.hash.slice(1);if(!h)return null;
+  const q={};for(const kv of h.split('&')){const i=kv.indexOf('=');if(i>0)q[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1))}
+  if(!q.c)return null;
+  const ps=q.c.split(',').map(x=>place(decodeURIComponent(x))).filter(Boolean);
+  if(!ps.length)return null;
+  return {places:ps, base:(ps.find(p=>p.n===q.b)||ps[0]).n, d:q.d||null, t:q.t||null};
+}
 
 // --- time math (all native Intl) ---
 const partsCache={};
@@ -314,7 +374,6 @@ function instantAt(d,min,zone){
 function ymd(t,zone){const w=new Date(wall(t,zone));return w.toISOString().slice(0,10)}
 function hourIn(t,zone){return new Date(wall(t,zone)).getUTCHours()}
 function cls(h){return h>=9&&h<18?'w':(h>=7&&h<9)||(h>=18&&h<22)?'e':''}
-const HOME=Intl.DateTimeFormat().resolvedOptions().timeZone;
 function offMin(t,zone){return Math.round((wall(t,zone)-t)/60000)}
 // "+10:30 from you" is the thing people actually want to know.
 function fromYou(t,zone){
@@ -375,7 +434,7 @@ function render(){
           st.rise?'':'<span><b>no sunrise</b></span>'}</div>`;
     el.innerHTML=`<div class="top">
       <button class="ic${on?' on':''}" data-base="${i}" aria-label="Set ${p.n} as base">${on?'★':'☆'}</button>
-      <div class="name" title="${z} · ${offset(t,z)}"><b><em>${p.n}</em>${has?(up?SUN_SVG:MOON_SVG):''}</b></div>
+      <div class="name" data-ren="${i}" title="${z} · ${offset(t,z)} — tap to rename"><b><em>${shown(p)}</em>${has?(up?SUN_SVG:MOON_SVG):''}</b></div>
       <div class="time"><b>${hm(t)}</b>
         <span>${new Intl.DateTimeFormat('en-US',{timeZone:z,weekday:'short',month:'short',day:'numeric'}).format(t)}${dd?` <em class="d">${dd>0?'+':''}${dd}</em>`:''}</span></div>
       <button class="ic" data-del="${i}" aria-label="Remove ${p.n}">×</button></div>
@@ -391,6 +450,18 @@ function render(){
   });
   // Lay the band over the selected column, from the first card's cell to the last card's,
   // so it crosses the gaps and reads as one line through every zone.
+  // Columns where every city is inside 9-6. Column j is the same instant in every row.
+  const okCols=[];
+  for(let j=0;j<24;j++) if(state.places.every(p=>{const h=hourIn(hours[j],p.z);return h>=9&&h<18})) okCols.push(j);
+  for(const j of okCols) for(const g of list.querySelectorAll('.grid')) g.children[j].classList.add('ok');
+  if(state.places.length>1){
+    if(okCols.length){
+      const a=hours[okCols[0]],b=hours[okCols[okCols.length-1]+1]||hours[23];
+      const f=x=>new Intl.DateTimeFormat('en-US',{timeZone:bz,hour:'numeric',minute:'2-digit'}).format(x);
+      overlap.innerHTML=`<b>${okCols.length}h everyone is at work</b> · ${f(a)}–${f(b)} in ${shown(baseP())}`;
+    } else overlap.innerHTML='<b>No hour suits everyone</b> · nobody is at work at the same time';
+    overlap.hidden=false;
+  } else overlap.hidden=true;
   const marks=[...list.querySelectorAll('.grid .cur')];
   if(marks.length){
     const lr=list.getBoundingClientRect(),a=marks[0].getBoundingClientRect(),b=marks[marks.length-1].getBoundingClientRect();
@@ -398,9 +469,11 @@ function render(){
     scrub.style.top=(a.top-lr.top-4)+'px';scrub.style.height=(b.bottom-a.top+8)+'px';
     scrub.hidden=false;
   }else scrub.hidden=true;
+  writeHash();
 }
 list.addEventListener('click',e=>{
   const h=e.target.closest('.grid div');if(h){goTo(+h.dataset.h*60);return}
+  if(ateClick){ateClick=false;return}   // the ★ was dragged, not tapped
   const b=e.target.closest('[data-base]'),d=e.target.closest('[data-del]');
   if(b){ // keep the same instant, re-express it in the new base
     const t=live?Date.now():instantAt(dateEl.value,+slider.value,baseP().z);
@@ -415,11 +488,42 @@ list.addEventListener('click',e=>{
 $('addForm').addEventListener('submit',e=>{
   e.preventDefault();const q=$('addInput').value.trim();if(!q)return;
   const p=place(q);
-  if(!p){alert('No match for: '+q);return}
+  if(!p){ // dead-end alerts are the top one-star complaint in this category
+    const near=suggest(q);
+    say.innerHTML=near.length
+      ? 'No match for \u201c'+q+'\u201d. Did you mean '+near.map(n=>'<button type="button" data-try="'+n.replace(/"/g,'&quot;')+'">'+n+'</button>').join(' ')+'?'
+      : 'No match for \u201c'+q+'\u201d. Try a city, or an IANA zone like Asia/Dubai.';
+    say.hidden=false;return}
+  say.hidden=true;
   if(!state.places.some(x=>x.n===p.n))state.places.push(p);
   $('addInput').value='';save();render();
 });
-const now=$('now');
+const now=$('now'),say=$('say');
+list.addEventListener('click',e=>{
+  const r=e.target.closest('[data-ren]');if(!r)return;
+  const p=state.places[+r.dataset.ren];if(!p)return;
+  const v=prompt('Name for '+p.n,p.label||'');
+  if(v===null)return;
+  p.label=v.trim()||null;save();render();
+});
+function flash(b,m){const o=b.textContent;b.textContent=m;setTimeout(()=>b.textContent=o,1400)}
+async function put(text,btn,okMsg){
+  try{await navigator.clipboard.writeText(text);flash(btn,okMsg)}
+  catch(e){window.prompt('Copy this:',text)}   // http, or permission denied
+}
+$('copy').addEventListener('click',()=>{
+  const bz=baseP().z,t=live?Date.now():instantAt(dateEl.value,planMin,bz);
+  const day=new Intl.DateTimeFormat('en-US',{timeZone:bz,weekday:'short',month:'short',day:'numeric'}).format(t);
+  const baseDay=ymd(t,bz),w=Math.max(...state.places.map(p=>shown(p).length));
+  const lines=state.places.map(p=>{
+    const dd=Math.round((Date.parse(ymd(t,p.z))-Date.parse(baseDay))/864e5);
+    return shown(p).padEnd(w)+'  '+new Intl.DateTimeFormat('en-US',{timeZone:p.z,hour:'numeric',minute:'2-digit'}).format(t)+(dd?' ('+(dd>0?'+':'')+dd+'d)':'');
+  });
+  put(day+'\n'+lines.join('\n'),$('copy'),'Copied');
+});
+say.addEventListener('click',e=>{const b=e.target.closest('[data-try]');if(!b)return;
+  $('addInput').value=b.dataset.try;$('addForm').requestSubmit()});
+$('share').addEventListener('click',()=>{writeHash();put(location.href,$('share'),'Link copied')});
 now.addEventListener('click',setNow);
 slider.addEventListener('input',()=>{live=false;planMin=+slider.value;render()});
 dateEl.addEventListener('change',()=>{live=false;render()});
@@ -433,18 +537,37 @@ function colAtX(x){
   const r=g.getBoundingClientRect();if(r.width<=0)return null;
   return Math.max(0,Math.min(23,Math.floor((x-r.left)/(r.width/24))));
 }
+// Drag the ★ to reorder. It is already at the left edge where a grip belongs, so this
+// adds no chrome; a tap still sets the base city because click only fires if nothing moved.
+let row=null,rowMoved=false,rowY=0,ateClick=false;
 list.addEventListener('pointerdown',e=>{
+  const g=e.target.closest&&e.target.closest('[data-base]');
+  if(g){row=+g.dataset.base;rowMoved=false;rowY=e.clientY;
+    try{list.setPointerCapture(e.pointerId)}catch(err){}return}
   const c=e.target.closest&&e.target.closest('.grid div');if(!c)return;
   dragging=true;try{list.setPointerCapture(e.pointerId)}catch(err){}
   // deliberately NOT goTo() here: iOS turns a vertical swipe that began on a cell into a
   // scroll, and jumping the clock on touch-down made the page scrub when you meant to scroll.
 });
 list.addEventListener('pointermove',e=>{
+  if(row!==null){
+    if(!rowMoved&&Math.abs(e.clientY-rowY)<6)return;   // a tap must not become a drag
+    rowMoved=true;
+    const cards=[...list.querySelectorAll('.city')];
+    let to=cards.findIndex(c=>{const r=c.getBoundingClientRect();return e.clientY<r.top+r.height/2});
+    if(to===-1)to=cards.length-1;
+    if(to!==row){state.places.splice(to,0,state.places.splice(row,1)[0]);row=to;render()}
+    const cur=list.querySelectorAll('.city')[row];if(cur)cur.classList.add('drag');
+    return;
+  }
   if(!dragging)return;
   const j=colAtX(e.clientX);
   if(j!==null&&j*60!==planMin)goTo(j*60);
 });
-for(const ev of ['pointerup','pointercancel'])list.addEventListener(ev,()=>{dragging=false});
+for(const ev of ['pointerup','pointercancel'])list.addEventListener(ev,()=>{
+  dragging=false;
+  if(row!==null){if(rowMoved){ateClick=true;save();render()}row=null}
+});
 
 // Type a time into the readout: 3pm, 15:30, 9:15am.
 sliderT.addEventListener('focus',()=>sliderT.select());
@@ -467,7 +590,12 @@ setInterval(()=>{const m=new Date().getMinutes();if(live&&m!==lastMin){lastMin=m
 // iOS freezes timers in a backgrounded tab, so catch up the moment it comes back
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&live)render()});
 
-setNow();
+(function start(){
+  const u=readHash();
+  if(u&&u.d&&u.t){const[h,m]=u.t.split(':').map(Number);live=false;dateEl.value=u.d;
+    planMin=h*60+(m||0);slider.value=Math.round(planMin/15)*15;render();return}
+  setNow();
+})();
 </script>
 </body>
 </html>
