@@ -68,20 +68,28 @@ button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
 .sunrow b{font-weight:600;color:var(--tx);font-variant-numeric:tabular-nums}
 .sunrow i{font-style:normal;opacity:.55}
 .sunrow .rel{color:var(--acc);font-weight:700}
-footer{margin:18px 0 28px;font-size:12px;color:var(--mut);line-height:1.55}
-footer h2{font-size:13px;color:var(--tx);margin-bottom:4px}
-footer p{margin-bottom:8px}
-footer .count{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
-footer img{height:20px;width:auto}
+footer{margin:16px 0 28px;font-size:13.5px;color:var(--mut);line-height:1.6;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:16px 18px 14px;box-shadow:var(--sh)}
+footer h2{font-size:15px;color:var(--tx);margin-bottom:7px;letter-spacing:-.01em}
+footer p{margin-bottom:10px;max-width:62ch}
+footer .count{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  margin-top:14px;padding-top:13px;border-top:1px solid var(--line)}
+footer .count .lab{font-size:12.5px;color:var(--mut)}
+footer img{height:22px;width:auto;vertical-align:middle}
+footer a{color:var(--acc);text-decoration:none;font-weight:600;font-size:12.5px}
+footer a:hover{text-decoration:underline}
 .time{text-align:right;font-variant-numeric:tabular-nums}
 .time b{font-size:22px;display:block;line-height:1.1}
 .time span{font-size:12px;color:var(--mut);white-space:nowrap}
 .time .d{font-size:11px}
 .time .d{color:var(--acc);font-weight:600}
 .ic{min-width:44px;min-height:44px;margin:0 -5px;padding:0;font-size:18px;border:0;background:none;color:var(--mut);flex:none}
-.ic[data-base]{cursor:grab;touch-action:none}
+.ic[data-base]{cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
 .ic[data-base]:active{cursor:grabbing}
-.city.drag{opacity:.97;box-shadow:var(--shh);transform:scale(1.012);z-index:3;position:relative}
+.city.drag{box-shadow:var(--shh);transform:scale(1.015);z-index:3;position:relative;cursor:grabbing}
+body.reordering{-webkit-user-select:none;user-select:none;cursor:grabbing}
+body.reordering .city{transition:none}
 .city.drag .ic[data-base]{color:var(--acc)}
 .ic.on{color:var(--acc)}
 .grid{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:1px;margin-top:9px;border-radius:8px;overflow:hidden;touch-action:pan-y}
@@ -179,9 +187,11 @@ button:active{transform:translateY(1px)}
   Sunrise, sunset and the sky colours are computed from each city's latitude and longitude rather than
   fetched, which means the page keeps working with no connection.</p>
   <div class="count">
-    <a href="https://hits.sh/danpune.github.io/timezones/"><img
+    <span class="lab">Visitors so far</span>
+    <a href="https://hits.sh/danpune.github.io/timezones/" title="Total page views"><img
       src="https://hits.sh/danpune.github.io/timezones.svg?style=flat-square&label=visits&color=1d4ed8&labelColor=15181d"
-      alt="visit count" loading="lazy"></a>
+      alt="total visits" loading="lazy"></a>
+    <a href="https://github.com/danpune/timezones">View source</a>
   </div>
 </footer>
 </main>
@@ -539,11 +549,15 @@ function colAtX(x){
 }
 // Drag the ★ to reorder. It is already at the left edge where a grip belongs, so this
 // adds no chrome; a tap still sets the base city because click only fires if nothing moved.
-let row=null,rowMoved=false,rowY=0,ateClick=false;
+let row=null,rowMoved=false,rowY=0,ateClick=false,rowEl=null;
 list.addEventListener('pointerdown',e=>{
   const g=e.target.closest&&e.target.closest('[data-base]');
-  if(g){row=+g.dataset.base;rowMoved=false;rowY=e.clientY;
-    try{list.setPointerCapture(e.pointerId)}catch(err){}return}
+  if(g){
+    if(e.button!==undefined&&e.button!==0)return;       // right-click must not start a drag
+    row=+g.dataset.base;rowMoved=false;rowY=e.clientY;rowEl=g.closest('.city');
+    e.preventDefault();                                  // or the browser starts selecting text
+    try{g.setPointerCapture(e.pointerId)}catch(err){try{list.setPointerCapture(e.pointerId)}catch(_){}}
+    return}
   const c=e.target.closest&&e.target.closest('.grid div');if(!c)return;
   dragging=true;try{list.setPointerCapture(e.pointerId)}catch(err){}
   // deliberately NOT goTo() here: iOS turns a vertical swipe that began on a cell into a
@@ -552,12 +566,18 @@ list.addEventListener('pointerdown',e=>{
 list.addEventListener('pointermove',e=>{
   if(row!==null){
     if(!rowMoved&&Math.abs(e.clientY-rowY)<6)return;   // a tap must not become a drag
-    rowMoved=true;
+    if(!rowMoved){rowMoved=true;document.body.classList.add('reordering');rowEl.classList.add('drag')}
     const cards=[...list.querySelectorAll('.city')];
     let to=cards.findIndex(c=>{const r=c.getBoundingClientRect();return e.clientY<r.top+r.height/2});
     if(to===-1)to=cards.length-1;
-    if(to!==row){state.places.splice(to,0,state.places.splice(row,1)[0]);row=to;render()}
-    const cur=list.querySelectorAll('.city')[row];if(cur)cur.classList.add('drag');
+    if(to!==row){
+      // Move the node itself rather than re-rendering: a full render would destroy the
+      // element under the pointer mid-drag, which is what made this feel broken.
+      state.places.splice(to,0,state.places.splice(row,1)[0]);
+      const ref=cards[to];
+      list.insertBefore(rowEl, to>row ? ref.nextSibling : ref);
+      row=to;
+    }
     return;
   }
   if(!dragging)return;
@@ -566,7 +586,12 @@ list.addEventListener('pointermove',e=>{
 });
 for(const ev of ['pointerup','pointercancel'])list.addEventListener(ev,()=>{
   dragging=false;
-  if(row!==null){if(rowMoved){ateClick=true;save();render()}row=null}
+  if(row!==null){
+    document.body.classList.remove('reordering');
+    if(rowEl)rowEl.classList.remove('drag');
+    if(rowMoved){ateClick=true;save();render()}
+    row=null;rowEl=null;
+  }
 });
 
 // Type a time into the readout: 3pm, 15:30, 9:15am.
