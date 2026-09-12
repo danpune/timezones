@@ -92,10 +92,10 @@ footer{margin:16px 0 28px;font-size:13px;color:var(--mut);line-height:1.6;
   padding:16px 18px 14px;box-shadow:var(--sh)}
 footer h2{font-size:15px;color:var(--tx);margin-bottom:7px;letter-spacing:-.01em}
 footer p{margin-bottom:10px;max-width:62ch}
-footer .count{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
-  margin-top:14px;padding-top:13px;border-top:1px solid var(--line)}
-footer .count .lab{font-size:12px;color:var(--mut)}
-footer img{height:22px;width:auto;min-width:64px;vertical-align:middle}
+footer .count{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  margin-top:15px;padding-top:14px;border-top:1px solid var(--line)}
+footer .count .hits{line-height:0;border-radius:6px;overflow:hidden}
+footer img{height:30px;width:auto;min-width:112px;vertical-align:middle;display:block}
 footer a{color:var(--acc);text-decoration:none;font-weight:600;font-size:12px}
 footer a:hover{text-decoration:underline}
 .time{text-align:right;font-variant-numeric:tabular-nums}
@@ -206,10 +206,9 @@ button:active{transform:translateY(1px)}
   Sunrise, sunset and the sky colours are computed from each city's latitude and longitude rather than
   fetched, which means the page keeps working with no connection.</p>
   <div class="count">
-    <span class="lab">Visitors so far</span>
-    <a href="https://hits.sh/danpune.github.io/timezones/" title="Total page views"><img
-      src="https://hits.sh/danpune.github.io/timezones.svg?style=flat-square&label=visits&color=1d4ed8&labelColor=15181d"
-      alt="total visits" width="64" height="20"></a>
+    <a class="hits" href="https://hits.sh/danpune.github.io/timezones/" title="Total visits to this page"><img
+      src="https://hits.sh/danpune.github.io/timezones.svg?style=for-the-badge&label=visits&color=1d4ed8&labelColor=14181d"
+      alt="Total visits to this page" width="112" height="28"></a>
     <a href="https://github.com/danpune/timezones">View source</a>
   </div>
 </footer>
