@@ -31,6 +31,10 @@ h1 small{font-size:12px;font-weight:400;color:var(--mut)}
 .ctl input[type=date]{flex:1;min-height:44px;font:inherit;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--tx)}
 button{min-height:44px;padding:0 14px;font:inherit;font-weight:600;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--acc);cursor:pointer}
 button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
+#now{min-width:112px;display:flex;align-items:center;justify-content:center;gap:6px}
+#now .dot{width:8px;height:8px;border-radius:50%;background:#16a34a;flex:none;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+@media(prefers-reduced-motion:reduce){#now .dot{animation:none}}
 .slider{display:flex;align-items:center;gap:10px}
 .slider input{flex:1;height:44px;accent-color:var(--acc)}
 .slider .t{min-width:88px;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;font-size:18px}
@@ -64,13 +68,13 @@ button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
 <div class="bar">
   <div class="ctl">
     <input type="date" id="date" aria-label="Date">
-    <button class="primary" id="now">Now</button>
+    <button id="now"><span class="dot"></span>Live</button>
   </div>
   <div class="slider">
     <input type="range" id="slider" min="0" max="1425" step="15" aria-label="Time of day in base city">
     <div class="t" id="sliderT"></div>
   </div>
-  <div class="hint">Slide, or tap any hour cell. ★ sets the base city the slider refers to.</div>
+  <div class="hint">Times are live and update every minute. Slide or tap an hour to plan ahead. ★ sets the base city.</div>
 </div>
 <div id="list"></div>
 <form class="add" id="addForm">
@@ -119,9 +123,16 @@ $('tzLocal').textContent='You: '+Intl.DateTimeFormat().resolvedOptions().timeZon
 for(const z of ALL){const o=document.createElement('option');o.value=z;$('tzList').appendChild(o)}
 for(const a of Object.keys(ALIAS)){const o=document.createElement('option');o.value=a.replace(/\b\w/g,c=>c.toUpperCase());$('tzList').appendChild(o)}
 
-function setNow(){const t=Date.now();dateEl.value=ymd(t,state.base);const w=new Date(wall(t,state.base));slider.value=Math.round((w.getUTCHours()*60+w.getUTCMinutes())/15)*15;render()}
+// live = the page tracks the real clock. The slider only steps in 15s, so while live we
+// read Date.now() directly and let the slider follow along as a rough position indicator.
+let live=true;
+function syncControls(t){dateEl.value=ymd(t,state.base);const w=new Date(wall(t,state.base));slider.value=Math.round((w.getUTCHours()*60+w.getUTCMinutes())/15)*15}
+function setNow(){live=true;render()}
 function render(){
-  const t=instantAt(dateEl.value,+slider.value,state.base);
+  const t=live?Date.now():instantAt(dateEl.value,+slider.value,state.base);
+  if(live)syncControls(t);
+  now.className=live?'':'primary';
+  now.innerHTML=live?'<span class="dot"></span>Live':'Back to now';
   const baseDay=ymd(t,state.base);
   sliderT.textContent=new Intl.DateTimeFormat('en-US',{timeZone:state.base,hour:'numeric',minute:'2-digit'}).format(t);
   const hours=[];for(let h=0;h<24;h++)hours.push(instantAt(dateEl.value,h*60,state.base));
@@ -143,10 +154,10 @@ function render(){
 list.addEventListener('click',e=>{
   const b=e.target.closest('[data-base]'),d=e.target.closest('[data-del]'),h=e.target.closest('[data-h]');
   if(b){ // keep the same instant, re-express it in the new base
-    const t=instantAt(dateEl.value,+slider.value,state.base);state.base=b.dataset.base;
-    dateEl.value=ymd(t,state.base);const w=new Date(wall(t,state.base));slider.value=Math.round((w.getUTCHours()*60+w.getUTCMinutes())/15)*15;save();render()}
+    const t=live?Date.now():instantAt(dateEl.value,+slider.value,state.base);state.base=b.dataset.base;
+    syncControls(t);save();render()}
   else if(d){if(state.zones.length>1){state.zones=state.zones.filter(z=>z!==d.dataset.del);if(state.base===d.dataset.del)state.base=state.zones[0];save();render()}}
-  else if(h){slider.value=h.dataset.h*60;render()}
+  else if(h){live=false;slider.value=h.dataset.h*60;render()}
 });
 $('addForm').addEventListener('submit',e=>{
   e.preventDefault();const q=$('addInput').value.trim();if(!q)return;
@@ -154,9 +165,17 @@ $('addForm').addEventListener('submit',e=>{
   if(!z){alert('Unknown time zone: '+q);return}
   if(!state.zones.includes(z))state.zones.push(z);$('addInput').value='';save();render();
 });
-$('now').addEventListener('click',setNow);
-slider.addEventListener('input',render);
-dateEl.addEventListener('change',render);
+const now=$('now');
+now.addEventListener('click',setNow);
+slider.addEventListener('input',()=>{live=false;render()});
+dateEl.addEventListener('change',()=>{live=false;render()});
+
+// tick the clock: check often, repaint only when the displayed minute actually rolls over
+let lastMin=-1;
+setInterval(()=>{const m=new Date().getMinutes();if(live&&m!==lastMin){lastMin=m;render()}},5000);
+// iOS freezes timers in a backgrounded tab, so catch up the moment it comes back
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&live)render()});
+
 setNow();
 </script>
 </body>
