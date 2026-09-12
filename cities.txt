@@ -4725,7 +4725,7 @@ Mardin|37.31|40.74|261|TR|
 Zwolle|52.51|6.09|244|NL|
 Baidoa|3.11|43.65|39|SO|
 Sầm Sơn|19.73|105.9|177|VN|
-Santo António|22.2|113.54|192|CN|
+Santo António|22.2|113.54|192|MO|
 Salford|53.49|-2.29|268|GB|
 Mandi Bahauddin|32.59|73.49|185|PK|
 Tokat|40.31|36.55|261|TR|
@@ -4888,7 +4888,7 @@ Paseh|-7.07|107.79|180|ID|
 Mothīhāri|26.65|84.92|187|IN|
 Koganei|35.7|139.51|218|JP|
 Retiro|40.41|-3.68|270|ES|
-Nossa Senhora de Fátima|22.21|113.55|192|CN|
+Nossa Senhora de Fátima|22.21|113.55|192|MO|
 Sunset Park|40.65|-74.01|123|US|
 Topeka|39.05|-95.68|79|US|
 Orléans|45.46|-75.5|148|CA|
