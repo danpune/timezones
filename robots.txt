@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://danpune.github.io/timezones/sitemap.xml
