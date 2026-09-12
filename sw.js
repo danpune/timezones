@@ -1,7 +1,7 @@
 // Network-first for the page so an update always lands when online, cache-first for
 // the static assets. Bump CACHE to purge everything from an older deploy.
-const CACHE = 'tz-v4';
-const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+const CACHE = 'tz-v6';
+const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './cities.txt'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
