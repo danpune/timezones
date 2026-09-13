@@ -24,7 +24,7 @@ account, no ads, no tracking. Works offline once loaded.
   `#Austin,London,Mumbai&b=London&d=2026-09-14&t=09:30`
 - **Copy times** as a plain text block for mail or chat.
 - **Rename and reorder.** Call a city "Mom" if that is what it is. Drag ⠿ to reorder.
-- 418 IANA zones and ~60 named cities. "Eastern Time", "PST", "IST" and "GMT" all resolve.
+- Search about 6,300 cities and every country as you type, plus all IANA zones. "Eastern Time", "PST", "IST" and "GMT" all resolve.
 - Light and dark, and installable to a phone home screen.
 
 ## Why

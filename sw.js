@@ -1,6 +1,6 @@
 // Network-first for the page so an update always lands when online, cache-first for
 // the static assets. Bump CACHE to purge everything from an older deploy.
-const CACHE = 'tz-v11';
+const CACHE = 'tz-v12';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './cities.txt'];
 
 self.addEventListener('install', e => {
@@ -10,7 +10,8 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      // all danpune.github.io sites share one origin and one Cache Storage: touch only tz- caches
+      .then(ks => Promise.all(ks.filter(k => k.startsWith('tz-') && k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -27,7 +28,8 @@ self.addEventListener('fetch', e => {
         // only the app itself may become the offline copy: a 404 used to replace it with GitHub's error
         // page, and any other page on the site (how-it-works.html) would have replaced it too
         .then(res => { if (res.ok && /\/(index\.html)?$/.test(url.pathname)) { const copy = res.clone(); caches.open(CACHE).then(c => c.put('./index.html', copy)) } return res })
-        .catch(() => caches.match('./index.html').then(r => r || caches.match('./')))
+        // offline, only the app's own address gets the saved app; how-it-works.html gets the normal offline error
+        .catch(() => /\/(index\.html)?$/.test(url.pathname) ? caches.match('./index.html').then(r => r || caches.match('./')) : Response.error())
     );
     return;
   }

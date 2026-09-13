@@ -317,6 +317,7 @@ button:active{transform:translateY(1px)}
   </ul>
   <h2 class="how">What’s new</h2>
   <ul class="howto">
+    <li><b>Sep 13:</b> Fixes from a full check: exact shared work hours with half-hour zones, correct Nunavut and Indiana state flags, late Arctic sunsets.</li>
     <li><b>Sep 13:</b> At-a-glance tiles at the top: every city's time in one look, coloured by its sky.</li>
     <li><b>Sep 12:</b> 12 or 24-hour clock, weather in °C or °F, and a heads-up before clocks change.</li>
     <li><b>Sep 12:</b> State flags for US states, Canadian provinces and Australian states.</li>
@@ -329,11 +330,12 @@ button:active{transform:translateY(1px)}
     <a class="hits" href="https://hits.sh/danpune.github.io/timezones/" title="Total visits to this page"><img
       src="https://hits.sh/danpune.github.io/timezones.svg?style=for-the-badge&label=visits&color=1d4ed8&labelColor=14181d"
       alt="Total visits to this page" width="112" height="28"></a>
+    <a href="how-it-works.html">How it works</a>
     <a href="https://github.com/danpune/timezones">View source</a>
     <a href="https://github.com/danpune/timezones/blob/main/LICENSE">MIT licence</a>
     <a href="https://www.geonames.org/" title="City data licensed CC BY 4.0">Cities: GeoNames</a>
     <a href="https://open-meteo.com/" title="Weather data by Open-Meteo.com, CC BY 4.0">Weather: Open-Meteo</a>
-    <span class="ver">build 2026.09.13-m</span>
+    <span class="ver">build 2026.09.13-n</span>
   </div>
 </footer>
 </main>
@@ -416,7 +418,7 @@ const CALIAS={'uk':'GB','united kingdom':'GB','great britain':'GB','britain':'GB
  'south korea':'KR','korea':'KR','north korea':'KP','drc':'CD','dr congo':'CD','congo':'CG','czechia':'CZ','czech republic':'CZ',
  'holland':'NL','burma':'MM','myanmar':'MM','ivory coast':'CI','viet nam':'VN','turkiye':'TR','türkiye':'TR','turkey':'TR',
  'hong kong':'HK','macau':'MO','macao':'MO','vatican':'VA','palestine':'PS','east timor':'TL','timor-leste':'TL',
- 'cape verde':'CV','swaziland':'SZ','eswatini':'SZ','laos':'LA','bolivia':'BO','venezuela':'VE','iran':'IR','syria':'SY',
+ 'cape verde':'CV','cabo verde':'CV','timor leste':'TL','swaziland':'SZ','eswatini':'SZ','laos':'LA','bolivia':'BO','venezuela':'VE','iran':'IR','syria':'SY',
  'tanzania':'TZ','moldova':'MD','russia':'RU','taiwan':'TW','north macedonia':'MK','macedonia':'MK',
  'samoa':'WS','western samoa':'WS','american samoa':'AS','virgin islands':'VI','us virgin islands':'VI',
  'british virgin islands':'VG','kosovo':'XK','bahamas':'BS','gambia':'GM','netherlands':'NL','philippines':'PH'};
@@ -444,8 +446,10 @@ const CAP={};for(const r of 'AD,Andorra la Vella,42.51,1.52,Europe/Andorra;AE,Ab
 // official state flags, so its cities show none. Flags are public-domain SVGs from Wikimedia
 // Commons, rendered to small PNGs in flags/ and fetched only when a card needs one.
 const ST={};for(const r of 'AU-01:ACT:Australian Capital Territory;AU-02:NSW:New South Wales;AU-03:NT:Northern Territory;AU-04:QLD:Queensland;AU-05:SA:South Australia;AU-06:TAS:Tasmania;AU-07:VIC:Victoria;AU-08:WA:Western Australia;CA-01:AB:Alberta;CA-02:BC:British Columbia;CA-03:MB:Manitoba;CA-04:NB:New Brunswick;CA-05:NL:Newfoundland and Labrador;CA-07:NS:Nova Scotia;CA-08:ON:Ontario;CA-09:PE:Prince Edward Island;CA-10:QC:Quebec;CA-11:SK:Saskatchewan;CA-12:YT:Yukon;CA-13:NT:Northwest Territories;CA-14:NU:Nunavut;US-AK:AK:Alaska;US-AL:AL:Alabama;US-AR:AR:Arkansas;US-AZ:AZ:Arizona;US-CA:CA:California;US-CO:CO:Colorado;US-CT:CT:Connecticut;US-DC:DC:District of Columbia;US-DE:DE:Delaware;US-FL:FL:Florida;US-GA:GA:Georgia;US-HI:HI:Hawaii;US-IA:IA:Iowa;US-ID:ID:Idaho;US-IL:IL:Illinois;US-IN:IN:Indiana;US-KS:KS:Kansas;US-KY:KY:Kentucky;US-LA:LA:Louisiana;US-MA:MA:Massachusetts;US-MD:MD:Maryland;US-ME:ME:Maine;US-MI:MI:Michigan;US-MN:MN:Minnesota;US-MO:MO:Missouri;US-MS:MS:Mississippi;US-MT:MT:Montana;US-NC:NC:North Carolina;US-ND:ND:North Dakota;US-NE:NE:Nebraska;US-NH:NH:New Hampshire;US-NJ:NJ:New Jersey;US-NM:NM:New Mexico;US-NV:NV:Nevada;US-NY:NY:New York;US-OH:OH:Ohio;US-OK:OK:Oklahoma;US-OR:OR:Oregon;US-PA:PA:Pennsylvania;US-RI:RI:Rhode Island;US-SC:SC:South Carolina;US-SD:SD:South Dakota;US-TN:TN:Tennessee;US-TX:TX:Texas;US-UT:UT:Utah;US-VA:VA:Virginia;US-VT:VT:Vermont;US-WA:WA:Washington;US-WI:WI:Wisconsin;US-WV:WV:West Virginia;US-WY:WY:Wyoming'.split(';')){const f=r.split(':');ST[f[0]]={a:f[1],n:f[2]}}
-const ZST={};for(const r of 'America/Adak:AK;America/Anchorage:AK;America/Atikokan:08;America/Blanc-Sablon:05;America/Boise:ID;America/Cambridge_Bay:13;America/Chicago:IL;America/Coral_Harbour:08;America/Creston:02;America/Dawson:12;America/Dawson_Creek:02;America/Denver:CO;America/Detroit:MI;America/Edmonton:01;America/Fort_Nelson:02;America/Glace_Bay:07;America/Goose_Bay:05;America/Halifax:07;America/Indiana/Indianapolis:IN;America/Indiana/Knox:IN;America/Indiana/Marengo:IN;America/Indiana/Petersburg:IN;America/Indiana/Tell_City:KY;America/Indiana/Vevay:KY;America/Indiana/Vincennes:IN;America/Indiana/Winamac:IN;America/Indianapolis:IN;America/Inuvik:12;America/Iqaluit:10;America/Juneau:AK;America/Kentucky/Louisville:KY;America/Kentucky/Monticello:KY;America/Los_Angeles:CA;America/Louisville:KY;America/Menominee:WI;America/Metlakatla:AK;America/Moncton:04;America/New_York:NY;America/Nome:AK;America/North_Dakota/Beulah:ND;America/North_Dakota/Center:ND;America/North_Dakota/New_Salem:ND;America/Phoenix:AZ;America/Rankin_Inlet:13;America/Regina:11;America/Resolute:13;America/Sitka:AK;America/St_Johns:05;America/Swift_Current:11;America/Toronto:08;America/Vancouver:02;America/Whitehorse:12;America/Winnipeg:03;America/Yakutat:AK;Antarctica/Macquarie:06;Australia/Adelaide:05;Australia/Brisbane:04;Australia/Broken_Hill:02;Australia/Darwin:03;Australia/Eucla:08;Australia/Hobart:06;Australia/Lindeman:04;Australia/Lord_Howe:02;Australia/Melbourne:07;Australia/Perth:08;Australia/Sydney:02;Pacific/Honolulu:HI'.split(';')){const i=r.lastIndexOf(':');ZST[r.slice(0,i)]=r.slice(i+1)}
+const ZST={};for(const r of 'America/Adak:AK;America/Anchorage:AK;America/Atikokan:08;America/Blanc-Sablon:10;America/Boise:ID;America/Cambridge_Bay:14;America/Chicago:IL;America/Coral_Harbour:08;America/Creston:02;America/Dawson:12;America/Dawson_Creek:02;America/Denver:CO;America/Detroit:MI;America/Edmonton:01;America/Fort_Nelson:02;America/Glace_Bay:07;America/Goose_Bay:05;America/Halifax:07;America/Indiana/Indianapolis:IN;America/Indiana/Knox:IN;America/Indiana/Marengo:IN;America/Indiana/Petersburg:IN;America/Indiana/Tell_City:IN;America/Indiana/Vevay:IN;America/Indiana/Vincennes:IN;America/Indiana/Winamac:IN;America/Indianapolis:IN;America/Inuvik:13;America/Iqaluit:14;America/Juneau:AK;America/Kentucky/Louisville:KY;America/Kentucky/Monticello:KY;America/Los_Angeles:CA;America/Louisville:KY;America/Menominee:MI;America/Metlakatla:AK;America/Moncton:04;America/New_York:NY;America/Nome:AK;America/North_Dakota/Beulah:ND;America/North_Dakota/Center:ND;America/North_Dakota/New_Salem:ND;America/Phoenix:AZ;America/Rankin_Inlet:14;America/Regina:11;America/Resolute:14;America/Sitka:AK;America/St_Johns:05;America/Swift_Current:11;America/Toronto:08;America/Vancouver:02;America/Whitehorse:12;America/Winnipeg:03;America/Yakutat:AK;Antarctica/Macquarie:06;Australia/Adelaide:05;Australia/Brisbane:04;Australia/Broken_Hill:02;Australia/Darwin:03;Australia/Eucla:08;Australia/Hobart:06;Australia/Lindeman:04;Australia/Lord_Howe:02;Australia/Melbourne:07;Australia/Perth:08;Australia/Sydney:02;Pacific/Honolulu:HI'.split(';')){const i=r.lastIndexOf(':');ZST[r.slice(0,i)]=r.slice(i+1)}
 const CAPST={US:'DC',CA:'08',AU:'01'};
+// a city named "constructor" in a link used to hit Object.prototype and throw on every save
+for(const o of [PLACES,ABBR,ZONEWORDS,LEGACY,COORDS,ZCC,CN,CALIAS,CDISP,CAP,ST,ZST,CAPST])Object.setPrototypeOf(o,null);
 function stKey(cc,st){return cc&&st&&ST[cc+'-'+st]?cc+'-'+st:''}
 function stateFlag(cc,st){const k=stKey(cc,st);return k?'<img class="sf" src="flags/'+k+'.png" alt="" loading="lazy" decoding="async">':''}
 function stateName(cc,st){const k=stKey(cc,st);return k?ST[k].n:''}
@@ -491,12 +495,16 @@ function sunTimes(t,p){
   // keyed by zone and coordinates, not name: Córdoba AR and Córdoba ES are different places
   const day=ymd(t,p.z),key=p.z+'|'+p.la+','+p.lo+'|'+day;
   if(sunCache[key])return sunCache[key];
-  const t0=instantAt(day,0,p.z);let prev=sunAlt(t0,c[0],c[1]),rise=null,set=null;
-  for(let m=10;m<=1440;m+=10){const tm=t0+m*60000,a=sunAlt(tm,c[0],c[1]);
-    if(prev<H0&&a>=H0)rise=bisect(tm-600000,tm,c);
-    if(prev>=H0&&a<H0)set=bisect(tm-600000,tm,c);
+  // Scan 30 hours, not 24: near the Arctic Circle the sunset after today's sunrise can fall just
+  // past midnight, and the previous evening's late sunset must not stand in for it.
+  const t0=instantAt(day,0,p.z),end=t0+864e5,ups=[],downs=[];let prev=sunAlt(t0,c[0],c[1]),a24=prev;
+  for(let m=10;m<=1800;m+=10){const tm=t0+m*60000,a=sunAlt(tm,c[0],c[1]);
+    if(prev<H0&&a>=H0)ups.push(bisect(tm-600000,tm,c));
+    if(prev>=H0&&a<H0)downs.push(bisect(tm-600000,tm,c));
+    if(m===1440)a24=a;
     prev=a}
-  return sunCache[key]={rise,set,polar:(!rise&&!set)?(prev>=H0?'Midnight sun':'Polar night'):null};
+  const rise=ups.find(x=>x<end)||null,set=(rise&&downs.find(x=>x>rise))||downs.find(x=>x<end)||null;
+  return sunCache[key]={rise,set,polar:(!rise&&!set)?(a24>=H0?'Midnight sun':'Polar night'):null};
 }
 const SUN_SVG='<svg class="gl sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.3"/><path d="M12 1.6v3M12 19.4v3M1.6 12h3M19.4 12h3M4.7 4.7l2.1 2.1M17.2 17.2l2.1 2.1M19.3 4.7l-2.1 2.1M6.8 17.2l-2.1 2.1"/></svg>';
 const MOON_SVG='<svg class="gl moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.8A8.6 8.6 0 019.2 3.5a8.6 8.6 0 1011.3 11.3z"/></svg>';
@@ -514,7 +522,7 @@ function place(q){
   const at=k.indexOf('@');
   if(at>0){
     const nm=k.slice(0,at).replace(/_/g,' '),f=k.slice(at+1).split(':');
-    const z=f[2]||'',cc=/^[A-Z]{2}$/.test(f[3]||'')?f[3]:(ZCC[z]||'');   // Name@lat:lon:Zone[:CC[:ST]]
+    const z=LEGACY[f[2]]||f[2]||'',cc=/^[A-Z]{2}$/.test(f[3]||'')?f[3]:(ZCC[z]||'');   // Name@lat:lon:Zone[:CC[:ST]]
     const st=/^[A-Z0-9]{1,3}$/.test(f[4]||'')&&stKey(cc,f[4])?f[4]:'';
     try{new Intl.DateTimeFormat('en-US',{timeZone:z})}catch(e){return null}
     const c=COORDS[z]||[null,null],la=parseFloat(f[0]),lo=parseFloat(f[1]);
@@ -528,8 +536,11 @@ function place(q){
   // modern ones, so the modern tzdata ids are searched as well as the browser's own list.
   const mod=Object.keys(COORDS).filter(x=>!LEGACY[x]);
   const us=lk.replace(/ /g,'_');
-  const z=ALL.find(x=>x.toLowerCase()===lk)||mod.find(x=>x.toLowerCase()===lk)
-        ||mod.find(x=>zoneCity(x).toLowerCase()===lk);
+  // Legacy ids resolve to the modern zone: a link written in Chrome ("Kiev") must open in Firefox,
+  // which only lists Europe/Kyiv. Coral Harbour is an alias of Atikokan, so it becomes Atikokan.
+  const leg=Object.keys(LEGACY).find(x=>x.toLowerCase()===lk||zoneCity(x).toLowerCase()===lk);
+  const z0=ALL.find(x=>x.toLowerCase()===lk)||mod.find(x=>x.toLowerCase()===lk)
+        ||mod.find(x=>zoneCity(x).toLowerCase()===lk)||leg,z=z0&&(LEGACY[z0]||z0);
   if(z){const c=COORDS[z]||COORDS[LEGACY[z]]||[null,null];return{n:zoneCity(z),z,la:c[0],lo:c[1],cc:ZCC[z]||'',st:ZST[z]||ZST[LEGACY[z]]||'',label}}
   // a country name resolves to that country's first zone — checked before any substring match
   const hit=CKEYS.find(([n])=>n===nk);
@@ -537,7 +548,7 @@ function place(q){
     const cap=CAP[hit[1]];if(cap)return{n:cap.n,z:cap.z,la:cap.la,lo:cap.lo,cc:hit[1],st:CAPST[hit[1]]||'',label};
     const zs=zonesOf(hit[1]);if(zs.length){const z2=zs[0],c=COORDS[z2];return{n:zoneCity(z2),z:z2,la:c[0],lo:c[1],cc:hit[1],st:ZST[z2]||'',label}}
   }
-  const zf=ALL.find(x=>x.toLowerCase().includes(us))||mod.find(x=>x.toLowerCase().includes(us));
+  const zf0=ALL.find(x=>x.toLowerCase().includes(us))||mod.find(x=>x.toLowerCase().includes(us)),zf=zf0&&(LEGACY[zf0]||zf0);
   if(zf){const c=COORDS[zf]||COORDS[LEGACY[zf]]||[null,null];return{n:zoneCity(zf),z:zf,la:c[0],lo:c[1],cc:ZCC[zf]||'',st:ZST[zf]||'',label}}
   return null;
 }
@@ -551,8 +562,9 @@ function load(){
       // Cities saved before states existed have no st, so Austin would load without its Texas
       // flag. Recover it for curated cities and zone cities; the country too, if it was never stored.
       for(const p of v.places){
+        const z0=p.z;p.z=LEGACY[z0]||z0;
         if(!p.cc)p.cc=ZCC[p.z]||'';
-        if(!p.st){const c=PLACES[p.n];p.st=(c&&c[0]===p.z&&c[3])||(p.n===zoneCity(p.z)?ZST[p.z]||'':'')}
+        if(!p.st){const c=PLACES[p.n];p.st=(c&&c[0]===p.z&&c[3])||(p.n===zoneCity(z0)?ZST[z0]||'':'')}
       }
       uniqueNames(v.places);if(!v.places.some(p=>p.n===v.base))v.base=v.places[0].n;
       return v;
@@ -566,8 +578,10 @@ function load(){
 function uniqueNames(ps){
   const seen=new Set();
   for(const p of ps){
-    if(seen.has(p.n)){const tag=countryName(p.cc||ZCC[p.z])||zoneCity(p.z);let n=cut(p.n+' ('+tag+')',60),k=2;
-      while(seen.has(n))n=cut(p.n+' ('+tag+' '+(k++)+')',60);p.n=n}
+    if(seen.has(p.n)){const tag=countryName(p.cc||ZCC[p.z])||zoneCity(p.z);let n,k=1;
+      // cut the name, never the suffix: a 60-character name used to cut back to itself and loop forever
+      do{const sfx=' ('+tag+(k>1?' '+k:'')+')';n=cut(p.n,Math.max(1,60-[...sfx].length))+sfx;k++}while(seen.has(n));
+      p.n=n}
     seen.add(p.n);
   }
   return ps;
@@ -644,8 +658,8 @@ function parseHash(){
     return p;
   }).filter(Boolean);
   if(!ps.length)return null;
-  const b=q.b?dec(q.b).replace(/_/g,' '):null;
-  return {places:ps, base:(b&&ps.find(p=>p.n===b)||ps[0]).n,
+  const b=q.b?dec(q.b).replace(/_/g,' '):null,bp=b&&place(b);   // old links: b=Kiev, card now Kyiv
+  return {places:ps, base:(b&&(ps.find(p=>p.n===b)||(bp&&ps.find(p=>p.n===bp.n&&p.z===bp.z)))||ps[0]).n,
           d:q.d?dec(q.d):null, t:q.t?dec(q.t):null};
 }
 
@@ -821,7 +835,9 @@ function render(){
   // so it crosses the gaps and reads as one line through every zone.
   // Columns where every city is inside 9-6. Column j is the same instant in every row.
   const okCols=[];
-  for(let j=0;j<24;j++) if(state.places.every(p=>{const h=hourIn(hours[j],p.z);return h>=9&&h<18})) okCols.push(j);
+  // whole hour, start and end: Mumbai is :30 off London, so 1-2 PM London ends at 6:30 PM there
+  const atWork=(x,z)=>{const h=hourIn(x,z);return h>=9&&h<18};
+  for(let j=0;j<24;j++) if(state.places.every(p=>atWork(hours[j],p.z)&&atWork(hours[j]+36e5-6e4,p.z))) okCols.push(j);
   for(const j of okCols) for(const g of list.querySelectorAll('.grid')) g.children[j].classList.add('ok');
   if(state.places.length>1){
     if(okCols.length){
@@ -940,7 +956,7 @@ function refreshSugg(){sList=suggestions(addInput.value);sActive=sList.length?0:
 function pickSugg(i){
   const x=sList[i];if(!x)return false;
   say.hidden=true;
-  if(!state.places.some(p=>p.n===x.p.n&&p.z===x.p.z)){
+  if(!state.places.some(p=>p.z===x.p.z&&(p.n===x.p.n||(p.la===x.p.la&&p.lo===x.p.lo)))){
     state.places.push({n:x.p.n,z:x.p.z,la:x.p.la,lo:x.p.lo,cc:x.p.cc,st:x.p.st||'',label:null});
     uniqueNames(state.places);
   }
@@ -1007,7 +1023,8 @@ if('serviceWorker' in navigator){
 const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
 let installEvt=null;
 function showInstall(html){
-  if(standalone||localStorage.getItem('tzInstall')==='x')return;
+  let seen=null;try{seen=localStorage.getItem('tzInstall')}catch(e){}   // Safari throws here when site data is blocked
+  if(standalone||seen==='x')return;
   const b=document.createElement('div');b.className='inst';b.innerHTML=html+'<button type="button" id="instX" aria-label="Dismiss">×</button>';
   document.querySelector('main').insertBefore(b,document.getElementById('overlap'));
   b.addEventListener('click',e=>{
@@ -1172,14 +1189,14 @@ for(const ev of ['pointerup','pointercancel'])list.addEventListener(ev,()=>{
 });
 
 // Type a time into the readout: 3pm, 15:30, 9:15am.
-sliderT.addEventListener('focus',()=>sliderT.select());
+sliderT.addEventListener('focus',()=>{sliderT.dataset.was=sliderT.value;sliderT.select()});
 sliderT.addEventListener('input',()=>sliderT.classList.toggle('bad',sliderT.value.trim()!==''&&parseTime(sliderT.value)===null));
 sliderT.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sliderT.blur()}
   else if(e.key==='Escape'){sliderT.value='';sliderT.blur()}});
 sliderT.addEventListener('blur',()=>{
   const v=parseTime(sliderT.value);
   sliderT.classList.remove('bad');
-  if(v===null){render();return}   // unparseable: put the real time back
+  if(v===null||sliderT.value===sliderT.dataset.was){render();return}   // tabbing through must not freeze Live   // unparseable: put the real time back
   goTo(v);
 });
 
@@ -1193,12 +1210,14 @@ addEventListener('scroll',()=>bar.classList.toggle('stuck',scrollY>4),{passive:t
 let lastMin=-1;
 setInterval(()=>{const m=new Date().getMinutes();if(live&&m!==lastMin&&row===null&&tRow===null&&!dragging){lastMin=m;render()}},5000);
 // iOS freezes timers in a backgrounded tab, so catch up the moment it comes back
+// writeHash uses replaceState, which never fires this, so only a pasted or typed link does
+addEventListener('hashchange',()=>location.reload());
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&live&&row===null&&tRow===null&&!dragging)render()});
 
 (function start(){
   const u=readHash();
   const v=u&&u.t?parseTime(u.t):null;   // the same validator the typed-time box uses
-  if(u&&u.d&&v!==null){const h=Math.floor(v/60),m=v%60;live=false;dateEl.value=u.d;
+  if(u&&u.d&&v!==null){const h=Math.floor(v/60),m=v%60;live=false;dateEl.value=u.d.replace(/^(\d{4})-(\d{1,2})-(\d{1,2})$/,(_,y,m,d)=>y+'-'+m.padStart(2,'0')+'-'+d.padStart(2,'0'));
     planMin=h*60+(m||0);slider.value=Math.round(planMin/15)*15;render();return}
   setNow();
 })();
