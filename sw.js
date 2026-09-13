@@ -24,8 +24,9 @@ self.addEventListener('fetch', e => {
   if (req.mode === 'navigate') {
     e.respondWith(
       fetch(req)
-        // only a real page may become the offline copy; a 404 used to replace it with GitHub's error page
-        .then(res => { if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put('./index.html', copy)) } return res })
+        // only the app itself may become the offline copy: a 404 used to replace it with GitHub's error
+        // page, and any other page on the site (how-it-works.html) would have replaced it too
+        .then(res => { if (res.ok && /\/(index\.html)?$/.test(url.pathname)) { const copy = res.clone(); caches.open(CACHE).then(c => c.put('./index.html', copy)) } return res })
         .catch(() => caches.match('./index.html').then(r => r || caches.match('./')))
     );
     return;
