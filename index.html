@@ -143,7 +143,7 @@ footer .ver{font-size:11px;color:var(--mut);font-variant-numeric:tabular-nums}
 .mv{display:none}
 body.edit .mv{display:inline-flex;align-items:center;justify-content:center;font-size:15px;color:var(--acc)}
 body.edit .mv[disabled]{opacity:.28;cursor:default}
-body.edit .time,body.edit .ic[data-del],body.edit .sunrow,body.edit .grid,body.edit #scrub{display:none!important}
+body.edit .time,body.edit .ic[data-del],body.edit .sunrow,body.edit .grid,body.edit #scrub,body.edit #glance{display:none!important}
 body.edit .city{display:block!important;padding:4px 8px}
 body.edit .top{display:flex!important;align-items:center;gap:6px}
 body.edit .name{flex:1;min-width:0}
@@ -158,6 +158,19 @@ body.reordering .city{transition:none}
 .grid .e{background:var(--edge);color:var(--edge-tx)}
 .grid .wk{box-shadow:inset 0 -3px 0 currentColor}
 .grid .cur{outline:3px solid currentColor;outline-offset:-3px;font-weight:800;z-index:2}
+/* At a glance: every city's clock in one look, tinted by its own sky, before the detail cards.
+   Phones get a column count the tiles fill (5 cities = 3 + 2); wider screens fit as many as there are. */
+#glance{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:6px;margin:6px 0 12px}
+#glance[hidden]{display:none}
+#glance .gt{min-height:0;display:grid;gap:1px;padding:8px 9px 9px;border:0;border-radius:10px;background:var(--panel);color:var(--tx);text-align:left;font-weight:400;box-shadow:var(--sh)}
+#glance .gt.on{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--acc)}
+#glance .gt:focus-visible{outline:2px solid currentColor;outline-offset:-5px}
+#glance .gn{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#glance .gh{font-size:22px;font-weight:700;line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
+#glance .gh small{font-size:11px;font-weight:700;margin-left:2px;letter-spacing:0}
+#glance .go{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+@media(min-width:600px){#glance{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}}
+@media(min-width:1200px){#glance .gh{font-size:26px}}
 .add{display:flex;gap:8px;margin:12px 0 8px}
 .add input{flex:1;min-height:44px;font:inherit;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--tx)}
 .add .combo{position:relative;flex:1;min-width:0}
@@ -264,6 +277,7 @@ button:active{transform:translateY(1px)}
     <input class="t" id="sliderT" type="text" inputmode="text" autocomplete="off" spellcheck="false" aria-label="Time in the base city — type one, e.g. 3pm">
   </div>
 </div>
+<div id="glance" hidden></div>
 <div class="hint"><span>Drag the hours or tap the time to type one. Tap ☆ to set the base city, hold and drag it to reorder.</span><button id="reorder" type="button" aria-pressed="false">Reorder</button></div>
 <div id="overlap" role="status" hidden></div>
 <div id="dst" role="status" hidden></div>
@@ -290,6 +304,7 @@ button:active{transform:translateY(1px)}
   and the visit counter are fetched from other sites, so those need a connection. MIT licensed.</p>
   <h2 class="how">How to use it</h2>
   <ul class="howto">
+    <li><b>See every city at once:</b> the tiles at the top show each city's time and how far it is from you, coloured by its sky. Tap one to jump to its card.</li>
     <li><b>Reorder cities:</b> press and hold a city's ☆, then drag it up or down. Or tap <b>Reorder</b> and use ▲ ▼.</li>
     <li><b>Set your base city:</b> tap its ☆. The clock and slider follow that city.</li>
     <li><b>Pick a time:</b> drag across the hours, or tap the time and type one, like <i>3pm</i> or <i>15:30</i>.</li>
@@ -302,6 +317,7 @@ button:active{transform:translateY(1px)}
   </ul>
   <h2 class="how">What’s new</h2>
   <ul class="howto">
+    <li><b>Sep 13:</b> At-a-glance tiles at the top: every city's time in one look, coloured by its sky.</li>
     <li><b>Sep 12:</b> 12 or 24-hour clock, weather in °C or °F, and a heads-up before clocks change.</li>
     <li><b>Sep 12:</b> State flags for US states, Canadian provinces and Australian states.</li>
     <li><b>Sep 12:</b> Search any city or country as you type (about 6,300 cities), with country flags.</li>
@@ -317,7 +333,7 @@ button:active{transform:translateY(1px)}
     <a href="https://github.com/danpune/timezones/blob/main/LICENSE">MIT licence</a>
     <a href="https://www.geonames.org/" title="City data licensed CC BY 4.0">Cities: GeoNames</a>
     <a href="https://open-meteo.com/" title="Weather data by Open-Meteo.com, CC BY 4.0">Weather: Open-Meteo</a>
-    <span class="ver">build 2026.09.12-l</span>
+    <span class="ver">build 2026.09.13-m</span>
   </div>
 </footer>
 </main>
@@ -727,7 +743,7 @@ function clockChange(t,z){
   }
   return dstCache[key]=null;
 }
-const dstNote=$('dst');
+const dstNote=$('dst'),glance=$('glance');
 function syncControls(t){const bz=baseP().z;dateEl.value=ymd(t,bz);const w=new Date(wall(t,bz));
   planMin=w.getUTCHours()*60+w.getUTCMinutes();slider.value=Math.round(planMin/15)*15}
 // Accepts 3pm, 3 PM, 3:30pm, 15:30, 1530, 9, 09:15. Minute-of-day, or null.
@@ -756,13 +772,20 @@ function render(){
              :ae.dataset.del!=null?'[data-del="'+ae.dataset.del+'"]'
              :ae.dataset.ren!=null?'[data-ren="'+ae.dataset.ren+'"]'
              :ae.dataset.up!=null?'[data-up="'+ae.dataset.up+'"]'
-             :ae.dataset.dn!=null?'[data-dn="'+ae.dataset.dn+'"]':null):null;
+             :ae.dataset.dn!=null?'[data-dn="'+ae.dataset.dn+'"]'
+             :ae.dataset.gl!=null?'[data-gl="'+ae.dataset.gl+'"]':null):null;
   list.innerHTML='';list.appendChild(scrub);
+  const gl=[];
   state.places.forEach((p,i)=>{
     const z=p.z,on=p.n===state.base;
     const day=ymd(t,z);const dd=Math.round((Date.parse(day)-Date.parse(baseDay))/864e5);
     const has=p.la!=null,st=has?sunTimes(t,p):null,alt=has?sunAlt(t,p.la,p.lo):null,up=alt!==null&&alt>=H0;
     const hm=x=>tf(z).format(x);
+    // the glance tile: same instant, same sky, AM/PM set small; the weekday only when it differs
+    const clock=tf(z).formatToParts(t).map(x=>x.type==='dayPeriod'?'<small>'+x.value+'</small>':x.type==='literal'&&/^\s+$/.test(x.value)?'':x.value).join('');
+    const wd=dd?new Intl.DateTimeFormat('en-US',{timeZone:z,weekday:'short'}).format(t):'';
+    const gap=fromYou(t,z).replace(/ from you$/,'').replace(/^([+\u2212]\d+)$/,'$1h');
+    gl.push(`<button type="button" class="gt${on?' on':''}" data-gl="${i}"${has?` style="background:${sky(alt)};color:${inkOn(alt)}"`:''} aria-label="${esc(shown(p))}${on?', base city':''}, ${hm(t)}, ${gap}${wd?', '+wd:''}"><span class="gn">${esc(shown(p))}</span><span class="gh">${clock}</span><span class="go">${gap}${wd?' · '+wd:''}</span></button>`);
     const w=wxAt(p,t),look=w&&wxLook(w.c,up);
     const glyph=w?`<span class="wx" title="${look[1]}"><span class="wi" aria-hidden="true">${look[0]}</span><b aria-hidden="true">${Math.round(pref.f?w.v*9/5+32:w.v)}°</b><span class="sr">${Math.round(pref.f?w.v*9/5+32:w.v)}°${pref.f?'F':'C'}, ${look[1].toLowerCase()}, </span></span>`:(up?SUN_SVG:MOON_SVG);
     const el=document.createElement('div');el.className='city'+(on?' base':'');
@@ -792,6 +815,8 @@ function render(){
       }).join('')}</div>`;
     list.appendChild(el);
   });
+  const n=state.places.length;
+  glance.innerHTML=gl.join('');glance.hidden=n<2;glance.style.setProperty('--cols',n<=3?n:n===4?2:3);
   // Lay the band over the selected column, from the first card's cell to the last card's,
   // so it crosses the gaps and reads as one line through every zone.
   // Columns where every city is inside 9-6. Column j is the same instant in every row.
@@ -834,7 +859,8 @@ function render(){
     scrub.style.top=(a.top-lr.top-4)+'px';scrub.style.height=(b.bottom-a.top+8)+'px';
     scrub.hidden=false;
   }else scrub.hidden=true;
-  if(keep){const back=list.querySelector(keep);if(back&&back.focus)back.focus()}
+  // restore without scrolling: after a tile tap the focused star can be far off-screen
+  if(keep){const back=document.querySelector(keep);if(back&&back.focus)back.focus({preventScroll:true})}
   writeHash();
 }
 list.addEventListener('click',e=>{
@@ -1029,6 +1055,12 @@ $('reorder').addEventListener('click',()=>{
   const b=$('reorder');b.textContent=on?'Done':'Reorder';b.setAttribute('aria-pressed',String(on));
   b.classList.toggle('primary',on);render();
   if(on){const first=list.querySelector('.mv:not([disabled])');if(first)first.focus()}
+});
+glance.addEventListener('click',e=>{
+  const b=e.target.closest('[data-gl]');if(!b)return;
+  const c=list.querySelectorAll('.city')[+b.dataset.gl];if(!c)return;
+  c.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
+  const star=c.querySelector('[data-base]');if(star)star.focus({preventScroll:true});
 });
 $('share').addEventListener('click',()=>{writeHash();put(location.href,$('share'),'Link copied')});
 document.querySelector('.acts').addEventListener('click',e=>{
