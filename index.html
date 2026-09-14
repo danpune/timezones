@@ -68,7 +68,7 @@ h1{font-size:20px;font-weight:700;margin-bottom:10px;padding-bottom:9px;display:
 .ctl input[type=date]{flex:1;min-height:44px;font:inherit;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--tx)}
 button{min-height:44px;padding:0 16px;font:inherit;font-weight:600;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--acc);cursor:pointer}
 button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
-#now{min-width:112px;display:flex;align-items:center;justify-content:center;gap:6px}
+#now{min-width:126px;display:flex;align-items:center;justify-content:center;gap:6px}
 #now .dot{width:8px;height:8px;border-radius:50%;background:#16a34a;flex:none;animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{50%{opacity:.35}}
 @media(prefers-reduced-motion:reduce){#now .dot{animation:none}}
@@ -163,7 +163,7 @@ body.reordering .city{transition:none}
 .grid .e{background:var(--edge);color:var(--edge-tx)}
 .grid .wk{box-shadow:inset 0 -3px 0 #16a34a}
 /* an inside ring in the cell's own ink vanished on night cells (white on a white card) and blacked out day labels */
-.grid .cur{outline:2px solid var(--tx);outline-offset:0;font-weight:800;z-index:2}
+.grid .cur{outline:2px solid var(--tx);outline-offset:1px;letter-spacing:-.05em;font-weight:800;z-index:2}
 /* At a glance: every city's clock in one look, tinted by its own sky, before the detail cards.
    Phones get a column count the tiles fill (5 cities = 3 + 2); wider screens fit as many as there are. */
 #glance{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:6px;margin:6px 0 12px}
@@ -284,7 +284,7 @@ button:active{transform:translateY(1px)}
   </div>
 </div>
 <div id="glance" hidden></div>
-<div class="hint"><span>Drag the hours or tap the time to type one. Tap ☆ to set the base city, hold and drag it to reorder.</span><button id="reorder" type="button" aria-pressed="false">Reorder</button></div>
+<div class="hint"><span>Drag the hours or tap the time to type one. Tap ☆ to set the base city, hold and drag any ☆ to reorder.</span><button id="reorder" type="button" aria-pressed="false">Reorder</button></div>
 <div id="overlap" role="status" hidden></div>
 <div id="dst" role="status" hidden></div>
 <div id="list"><div id="scrub" hidden></div></div>
@@ -314,21 +314,21 @@ button:active{transform:translateY(1px)}
     <li><b>Reorder cities:</b> press and hold a city's ☆, then drag it up or down. Or tap <b>Reorder</b> and use ▲ ▼.</li>
     <li><b>Set your base city:</b> tap its ☆. The clock and slider follow that city.</li>
     <li><b>Pick a time:</b> drag across the hours, or tap the time and type one, like <i>3pm</i> or <i>15:30</i>.</li>
-    <li><b>Rename a city:</b> tap its name, say “Mom” or “HQ”.</li>
+    <li><b>Rename a city:</b> tap its name and type a new one, like “Mom” or “HQ”. Clear it to get the city name back.</li>
     <li><b>Add or remove:</b> start typing a city or country and pick from the list; tap × to remove one.</li>
     <li><b>Share:</b> tap <b>Share</b> (<b>Copy link</b> on a computer) to send this exact view with its times, or <b>Copy times</b> for text only.</li>
     <li><b>Clock and weather:</b> use <b>12h / 24h</b> and <b>°C / °F</b> under the cities. The weather is the forecast for the hour you are looking at.</li>
-    <li><b>Clock changes:</b> an orange note appears when a city moves its clocks for daylight saving within the next two weeks.</li>
+    <li><b>Clock changes:</b> an orange note appears when a city changes its clocks for daylight saving in the week before or the two weeks after the date shown.</li>
     <li><b>Keep it on your phone:</b> add it to your home screen. It works offline.</li>
   </ul>
   <h2 class="how">What’s new</h2>
   <ul class="howto">
     <li><b>Sep 13:</b> Anonymous visit statistics from Cloudflare Web Analytics. No cookies, and your city names are never sent.</li>
-    <li><b>Sep 13:</b> A new home screen icon: three skies, night, sunset and day.</li>
+    <li><b>Sep 13:</b> A new home screen icon showing three skies: night, sunset and day.</li>
     <li><b>Sep 13:</b> Shows when everyone is awake if no work hours overlap, a Share button on phones, a clearer current-hour marker, and the time box names its city.</li>
     <li><b>Sep 13:</b> Fixes from a full check: exact shared work hours with half-hour zones, correct Nunavut and Indiana state flags, late Arctic sunsets.</li>
     <li><b>Sep 13:</b> At-a-glance tiles at the top: every city's time in one look, coloured by its sky.</li>
-    <li><b>Sep 12:</b> 12 or 24-hour clock, weather in °C or °F, and a heads-up before clocks change.</li>
+    <li><b>Sep 12:</b> 12- or 24-hour clock, weather in °C or °F, and a heads-up before clocks change.</li>
     <li><b>Sep 12:</b> State flags for US states, Canadian provinces and Australian states.</li>
     <li><b>Sep 12:</b> Search any city or country as you type (about 6,300 cities), with country flags.</li>
     <li><b>Sep 12:</b> Works offline and installs on your home screen. More Indian cities, including Nellore.</li>
@@ -344,7 +344,7 @@ button:active{transform:translateY(1px)}
     <a href="https://github.com/danpune/timezones/blob/main/LICENSE">MIT licence</a>
     <a href="https://www.geonames.org/" title="City data licensed CC BY 4.0">Cities: GeoNames</a>
     <a href="https://open-meteo.com/" title="Weather data by Open-Meteo.com, CC BY 4.0">Weather: Open-Meteo</a>
-    <span class="ver">build 2026.09.13-q</span>
+    <span class="ver">build 2026.09.13-r</span>
   </div>
 </footer>
 </main>
@@ -862,8 +862,11 @@ function render(){
       // one range per unbroken block: joining 7-11 AM and 9-10 PM into 7 AM-10 PM covered Mumbai's night
       const runs=[];for(const j of use){const r=runs[runs.length-1];if(r&&r[1]===j)r[1]=j+1;else runs.push([j,j+1])}
       const f=x=>tf(bz).format(x),end=k=>k<24?hours[k]:hours[23]+36e5;
-      setHTML(overlap,`<b>${use.length}h everyone is ${okCols.length?'at work':'awake'}</b> · ${runs.map(r=>f(hours[r[0]])+'–'+f(end(r[1]))).join(', ')} in ${esc(shown(baseP()))}`);
-    } else setHTML(overlap,'<b>No hour suits everyone</b> · no shared hour between 7 AM and 10 PM');
+      const pm=x=>(tf(bz).formatToParts(x).find(q=>q.type==='dayPeriod')||{}).value;
+      // "9:00–11:00 AM": AM/PM once when both ends share it. Times first: "2h everyone is awake · 9–11 AM" read as "in 2 hours"
+      const rng=(a,b)=>(pm(a)&&pm(a)===pm(b)?f(a).replace(/\s*[AP]M$/i,''):f(a))+'–'+f(b);
+      setHTML(overlap,`<b>Everyone is ${okCols.length?'at work':'awake'}:</b> ${runs.map(r=>rng(hours[r[0]],end(r[1]))).join(', ')} <span style="white-space:nowrap">${esc(shown(baseP()))} time (${use.length}h)</span>`);
+    } else setHTML(overlap,'<b>No shared time:</b> there is no hour when every city is between '+(pref.h24?'07:00 and 22:00':'7 AM and 10 PM'));
     overlap.hidden=false;
   } else overlap.hidden=true;
   // Heads-up before clocks change: the week the UK has changed and the US has not is when
@@ -880,7 +883,7 @@ function render(){
     // Differences only change if some city does not shift, shifts by a different amount, or on
     // another day. Copenhagen and Nuuk change at the same instant under different local dates.
     const shift=cs.some(c=>!c||c.d!==cs[0].d||Math.abs(c.at-cs[0].at)>864e5);
-    setHTML(dstNote,'<b>Clocks change</b> · '+gs.map(g=>g.ns.join(', ')+' '+(g.past?'went':g.ns.length>1?'go':'goes')+' '+(g.d>0?'forward ':'back ')+amt(g.d)+' on '+g.when).join(' · ')
+    setHTML(dstNote,'<b>Clocks change:</b> '+gs.map(g=>new Intl.ListFormat('en-GB').format(g.ns)+' '+(g.past?'went':g.ns.length>1?'go':'goes')+' '+(g.d>0?'forward ':'back ')+amt(g.d)+' on '+g.when).join('; ')
       +(shift?'. The time differences between these cities change too.':''));
     dstNote.hidden=false;
   } else dstNote.hidden=true;
@@ -1065,7 +1068,7 @@ list.addEventListener('keydown',e=>{
 });
 function renameAt(i){
   const p=state.places[i];if(!p)return;
-  const v=prompt('Name for '+p.n,p.label||'');
+  const v=prompt('Name for '+p.n+' (clear to reset)',p.label||'');
   if(v===null)return;
   p.label=cut(v.trim(),24)||null;save();render();
 }
@@ -1087,10 +1090,12 @@ function timesText(){
 $('copy').addEventListener('click',()=>put(timesText(),$('copy'),'Copied'));
 say.addEventListener('click',e=>{const b=e.target.closest('[data-try]');if(!b)return;
   $('addInput').value=b.dataset.try;$('addForm').requestSubmit()});
+const HINT=document.querySelector('.hint span').textContent;
 $('reorder').addEventListener('click',()=>{
   const on=document.body.classList.toggle('edit');
   const b=$('reorder');b.textContent=on?'Done':'Reorder';b.setAttribute('aria-pressed',String(on));
   b.classList.toggle('primary',on);render();
+  document.querySelector('.hint span').textContent=on?'Use ▲ ▼ to move a city, then tap Done.':HINT;   // no hours to drag in this mode
   if(on){const first=list.querySelector('.mv:not([disabled])');if(first)first.focus()}
 });
 glance.addEventListener('click',e=>{
