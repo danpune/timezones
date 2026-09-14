@@ -7,7 +7,7 @@ Compare cities at a glance, with real sunrise, sunset and daylight for each one.
 ![Time Zones](preview.png)
 
 One static HTML file. No build step, no dependencies, no backend, no API key, no
-account, no ads, no tracking. Works offline once loaded.
+account, no ads, no cookies. Works offline once loaded.
 
 ## What it does
 
