@@ -303,11 +303,11 @@ button:active{transform:translateY(1px)}
 <footer>
   <h2>Why this exists</h2>
   <p>I wanted a simple way to compare a handful of time zones at a glance, and to relate them back to
-  whatever time it is where I am. No ads, no sign-up, no tracking.</p>
+  whatever time it is where I am. No ads, no sign-up, no cookies.</p>
   <p>Conversions come from your own device's time zone database, so daylight saving is always current.
   Sunrise, sunset and the sky colours are computed from each city's latitude and longitude rather than
-  fetched, and the page caches itself, so it keeps working with no connection. Only the weather (from Open-Meteo)
-  and the visit counter are fetched from other sites, so those need a connection. MIT licensed.</p>
+  fetched, and the page caches itself, so it keeps working with no connection. Only the weather (from Open-Meteo),
+  the visit counter and anonymous visit statistics (Cloudflare Web Analytics, no cookies) come from other sites. MIT licensed.</p>
   <h2 class="how">How to use it</h2>
   <ul class="howto">
     <li><b>See every city at once:</b> the tiles at the top show each city's time and how far it is from you, coloured by its sky. Tap one to jump to its card.</li>
@@ -323,6 +323,7 @@ button:active{transform:translateY(1px)}
   </ul>
   <h2 class="how">What’s new</h2>
   <ul class="howto">
+    <li><b>Sep 13:</b> Anonymous visit statistics from Cloudflare Web Analytics. No cookies, and your city names are never sent.</li>
     <li><b>Sep 13:</b> A new home screen icon: three skies, night, sunset and day.</li>
     <li><b>Sep 13:</b> Shows when everyone is awake if no work hours overlap, a Share button on phones, a clearer current-hour marker, and the time box names its city.</li>
     <li><b>Sep 13:</b> Fixes from a full check: exact shared work hours with half-hour zones, correct Nunavut and Indiana state flags, late Arctic sunsets.</li>
@@ -343,7 +344,7 @@ button:active{transform:translateY(1px)}
     <a href="https://github.com/danpune/timezones/blob/main/LICENSE">MIT licence</a>
     <a href="https://www.geonames.org/" title="City data licensed CC BY 4.0">Cities: GeoNames</a>
     <a href="https://open-meteo.com/" title="Weather data by Open-Meteo.com, CC BY 4.0">Weather: Open-Meteo</a>
-    <span class="ver">build 2026.09.13-p</span>
+    <span class="ver">build 2026.09.13-q</span>
   </div>
 </footer>
 </main>
@@ -1248,6 +1249,6 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&live&&row
   setNow();
 })();
 </script>
-<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "7271996b0f234a3981511907aaa6188b"}'></script><!-- End Cloudflare Web Analytics -->
+<!-- Cloudflare Web Analytics: anonymous, no cookies. "spa": false because the page rewrites its own address on every repaint, which would otherwise count as a new page view each minute --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "7271996b0f234a3981511907aaa6188b", "spa": false}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>
