@@ -19,7 +19,7 @@ account, no ads, no tracking. Works offline once loaded.
 - **One line across every city.** Drag the hours, or tap the time and type one
   (`3pm`, `15:30`), and a single thread marks that instant in every zone.
 - **Relative to you.** Every card says how far it is from wherever you are.
-- **Overlap finder.** Names the hours everyone is at work, or says plainly that none exist.
+- **Overlap finder.** Names the hours everyone is at work, or else when everyone is awake (7 AM to 10 PM).
 - **Shareable link.** The whole comparison lives in the URL:
   `#Austin,London,Mumbai&b=London&d=2026-09-14&t=09:30`
 - **Copy times** as a plain text block for mail or chat.

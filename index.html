@@ -78,6 +78,8 @@ button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
   padding:6px 4px;font-family:inherit;cursor:text}
 .slider .t:focus{outline:none;border-color:var(--acc);background:var(--panel)}
 .slider .t.bad{border-color:#dc2626}
+.tw{position:relative;flex:none}
+#baseLbl{position:absolute;right:4px;bottom:-10px;font-size:10px;line-height:1;color:var(--mut);white-space:nowrap;max-width:60vw;overflow:hidden;text-overflow:ellipsis}
 #list{position:relative}
 @media(max-width:1199px){#scrub{display:none!important}}
 /* One band drawn across every card, so the same instant reads as a single line down the page. */
@@ -152,12 +154,15 @@ body.reordering{-webkit-user-select:none;user-select:none;cursor:grabbing}
 body.reordering .city{transition:none}
 .city.drag .ic[data-base]{color:var(--acc)}
 .ic.on{color:var(--acc)}
-.grid{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:1px;margin-top:9px;border-radius:8px;overflow:hidden;touch-action:pan-y}
+/* No overflow:hidden: the current-hour ring is drawn outside its cell, so the end cells round themselves. */
+.grid{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:1px;margin-top:9px;border-radius:8px;touch-action:pan-y}
+.grid div:first-child{border-radius:8px 0 0 8px}.grid div:last-child{border-radius:0 8px 8px 0}
 .grid div{font-size:11px;text-align:center;padding:10px 0 11px;background:var(--night);color:var(--night-tx);cursor:pointer;line-height:1;min-height:30px;position:relative}
 .grid .w{background:var(--work);color:var(--work-tx)}
 .grid .e{background:var(--edge);color:var(--edge-tx)}
-.grid .wk{box-shadow:inset 0 -3px 0 currentColor}
-.grid .cur{outline:3px solid currentColor;outline-offset:-3px;font-weight:800;z-index:2}
+.grid .wk{box-shadow:inset 0 -3px 0 #16a34a}
+/* an inside ring in the cell's own ink vanished on night cells (white on a white card) and blacked out day labels */
+.grid .cur{outline:2px solid var(--tx);outline-offset:0;font-weight:800;z-index:2}
 /* At a glance: every city's clock in one look, tinted by its own sky, before the detail cards.
    Phones get a column count the tiles fill (5 cities = 3 + 2); wider screens fit as many as there are. */
 #glance{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:6px;margin:6px 0 12px}
@@ -208,7 +213,7 @@ body.reordering .city{transition:none}
   border-left:4px solid #d97706;border-radius:8px;padding:9px 12px;margin:-4px 0 10px}
 #say button{min-height:32px;padding:0 10px;font-size:12px;color:var(--acc);margin:2px 0}
 .acts button{font-size:13px;padding:0 14px;min-height:40px;color:var(--acc)}
-.grid .ok{box-shadow:inset 0 3px 0 currentColor,inset 0 -3px 0 currentColor}
+.grid .ok{box-shadow:inset 0 3px 0 #16a34a,inset 0 -3px 0 #16a34a}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px}
 .legend .sw{width:46px;background:linear-gradient(90deg,#0d1430,#7a4f6b,#e08b3c,#a9cfe8)}
 .legend .wm{width:14px;background:transparent;box-shadow:inset 0 -3px 0 rgba(22,163,74,.9);border:1px solid var(--line)}
@@ -274,7 +279,7 @@ button:active{transform:translateY(1px)}
   </div>
   <div class="slider">
     <input type="range" id="slider" min="0" max="1425" step="15" aria-label="Time of day in base city">
-    <input class="t" id="sliderT" type="text" inputmode="text" autocomplete="off" spellcheck="false" aria-label="Time in the base city — type one, e.g. 3pm">
+    <span class="tw"><input class="t" id="sliderT" type="text" inputmode="text" autocomplete="off" spellcheck="false" aria-label="Time in the base city — type one, e.g. 3pm"><span id="baseLbl" aria-hidden="true"></span></span>
   </div>
 </div>
 <div id="glance" hidden></div>
@@ -285,7 +290,7 @@ button:active{transform:translateY(1px)}
 <form class="add" id="addForm" role="search">
   <div class="combo">
     <input id="addInput" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sugg"
-      aria-label="Add a city or country" placeholder="Add a city or country (e.g. Hanoi, Thailand)"
+      aria-label="Add a city or country" placeholder="Add a city or country"
       autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" enterkeyhint="done">
     <ul id="sugg" role="listbox" aria-label="Suggestions" hidden></ul>
   </div>
@@ -310,13 +315,14 @@ button:active{transform:translateY(1px)}
     <li><b>Pick a time:</b> drag across the hours, or tap the time and type one, like <i>3pm</i> or <i>15:30</i>.</li>
     <li><b>Rename a city:</b> tap its name, say “Mom” or “HQ”.</li>
     <li><b>Add or remove:</b> start typing a city or country and pick from the list; tap × to remove one.</li>
-    <li><b>Share:</b> tap <b>Copy link</b> to send this exact view, or <b>Copy times</b> for a text summary.</li>
+    <li><b>Share:</b> tap <b>Share</b> (<b>Copy link</b> on a computer) to send this exact view with its times, or <b>Copy times</b> for text only.</li>
     <li><b>Clock and weather:</b> use <b>12h / 24h</b> and <b>°C / °F</b> under the cities. The weather is the forecast for the hour you are looking at.</li>
     <li><b>Clock changes:</b> an orange note appears when a city moves its clocks for daylight saving within the next two weeks.</li>
     <li><b>Keep it on your phone:</b> add it to your home screen. It works offline.</li>
   </ul>
   <h2 class="how">What’s new</h2>
   <ul class="howto">
+    <li><b>Sep 13:</b> Shows when everyone is awake if no work hours overlap, a Share button on phones, a clearer current-hour marker, and the time box names its city.</li>
     <li><b>Sep 13:</b> Fixes from a full check: exact shared work hours with half-hour zones, correct Nunavut and Indiana state flags, late Arctic sunsets.</li>
     <li><b>Sep 13:</b> At-a-glance tiles at the top: every city's time in one look, coloured by its sky.</li>
     <li><b>Sep 12:</b> 12 or 24-hour clock, weather in °C or °F, and a heads-up before clocks change.</li>
@@ -335,7 +341,7 @@ button:active{transform:translateY(1px)}
     <a href="https://github.com/danpune/timezones/blob/main/LICENSE">MIT licence</a>
     <a href="https://www.geonames.org/" title="City data licensed CC BY 4.0">Cities: GeoNames</a>
     <a href="https://open-meteo.com/" title="Weather data by Open-Meteo.com, CC BY 4.0">Weather: Open-Meteo</a>
-    <span class="ver">build 2026.09.13-n</span>
+    <span class="ver">build 2026.09.13-o</span>
   </div>
 </footer>
 </main>
@@ -621,7 +627,9 @@ function parseTok(x){
 }
 function defaultPlaces(){
   const ps=DEFAULT.map(place);
-  if(!ps.some(p=>p.z===HOME)){const me=place(HOME);if(me)ps.unshift(me)}
+  const i=ps.findIndex(p=>p.z===HOME);
+  if(i<0){const me=place(HOME);if(me)ps.unshift(me)}
+  else if(i>0)ps.unshift(ps.splice(i,1)[0]);   // plan in the visitor's own time: Mumbai leads for someone in India
   return ps;
 }
 function writeHash(){
@@ -692,7 +700,7 @@ function fromYou(t,zone){
   const d=offMin(t,zone)-offMin(t,HOME);
   if(!d)return 'your time';
   const h=Math.floor(Math.abs(d)/60),m=Math.abs(d)%60;
-  return (d>0?'+':'\u2212')+h+(m?':'+String(m).padStart(2,'0'):'')+' from you';
+  return (d>0?'+':'\u2212')+h+(m?':'+String(m).padStart(2,'0'):'h')+' from you';
 }
 function offset(t,zone){return new Intl.DateTimeFormat('en-US',{timeZone:zone,timeZoneName:'shortOffset'}).formatToParts(t).find(p=>p.type==='timeZoneName').value.replace('GMT','UTC')}
 
@@ -757,7 +765,9 @@ function clockChange(t,z){
   }
   return dstCache[key]=null;
 }
-const dstNote=$('dst'),glance=$('glance');
+const dstNote=$('dst'),glance=$('glance'),baseLbl=$('baseLbl');
+// status notes are live regions: rewrite only when the text changes, or VoiceOver repeats them every minute
+function setHTML(el,h){if(el._h!==h){el.innerHTML=h;el._h=h}}
 function syncControls(t){const bz=baseP().z;dateEl.value=ymd(t,bz);const w=new Date(wall(t,bz));
   planMin=w.getUTCHours()*60+w.getUTCMinutes();slider.value=Math.round(planMin/15)*15}
 // Accepts 3pm, 3 PM, 3:30pm, 15:30, 1530, 9, 09:15. Minute-of-day, or null.
@@ -779,6 +789,9 @@ function render(){
   now.innerHTML=live?'<span class="dot"></span>Live':'Back to now';
   const baseDay=ymd(t,bz);
   if(document.activeElement!==sliderT){sliderT.value=tf(bz).format(t);sliderT.classList.remove('bad')}
+  baseLbl.textContent=shown(baseP())+' time';
+  sliderT.setAttribute('aria-label','Time in '+shown(baseP())+' \u2014 type one, e.g. 3pm');
+  slider.setAttribute('aria-valuetext',tf(bz).format(live?instantAt(dateEl.value,+slider.value,bz):t)+' in '+shown(baseP()));   // a time, not a percentage; steady while Live
   const hours=[];for(let h=0;h<24;h++)hours.push(instantAt(dateEl.value,h*60,bz));
   const curH=hourIn(t,bz),wide=innerWidth>=400;
   const ae=document.activeElement;                       // a repaint must not steal the keyboard
@@ -798,7 +811,7 @@ function render(){
     // the glance tile: same instant, same sky, AM/PM set small; the weekday only when it differs
     const clock=tf(z).formatToParts(t).map(x=>x.type==='dayPeriod'?'<small>'+x.value+'</small>':x.type==='literal'&&/^\s+$/.test(x.value)?'':x.value).join('');
     const wd=dd?new Intl.DateTimeFormat('en-US',{timeZone:z,weekday:'short'}).format(t):'';
-    const gap=fromYou(t,z).replace(/ from you$/,'').replace(/^([+\u2212]\d+)$/,'$1h');
+    const gap=fromYou(t,z).replace(/ from you$/,'');
     gl.push(`<button type="button" class="gt${on?' on':''}" data-gl="${i}"${has?` style="background:${sky(alt)};color:${inkOn(alt)}"`:''} aria-label="${esc(shown(p))}${on?', base city':''}, ${hm(t)}, ${gap}${wd?', '+wd:''}"><span class="gn">${esc(shown(p))}</span><span class="gh">${clock}</span><span class="go">${gap}${wd?' · '+wd:''}</span></button>`);
     const w=wxAt(p,t),look=w&&wxLook(w.c,up);
     const glyph=w?`<span class="wx" title="${look[1]}"><span class="wi" aria-hidden="true">${look[0]}</span><b aria-hidden="true">${Math.round(pref.f?w.v*9/5+32:w.v)}°</b><span class="sr">${Math.round(pref.f?w.v*9/5+32:w.v)}°${pref.f?'F':'C'}, ${look[1].toLowerCase()}, </span></span>`:(up?SUN_SVG:MOON_SVG);
@@ -834,17 +847,20 @@ function render(){
   // Lay the band over the selected column, from the first card's cell to the last card's,
   // so it crosses the gaps and reads as one line through every zone.
   // Columns where every city is inside 9-6. Column j is the same instant in every row.
-  const okCols=[];
   // whole hour, start and end: Mumbai is :30 off London, so 1-2 PM London ends at 6:30 PM there
-  const atWork=(x,z)=>{const h=hourIn(x,z);return h>=9&&h<18};
-  for(let j=0;j<24;j++) if(state.places.every(p=>atWork(hours[j],p.z)&&atWork(hours[j]+36e5-6e4,p.z))) okCols.push(j);
+  const inHours=(x,z,lo,hi)=>{const h=hourIn(x,z);return h>=lo&&h<hi};
+  const cols=(lo,hi)=>{const c=[];for(let j=0;j<24;j++)if(state.places.every(p=>inHours(hours[j],p.z,lo,hi)&&inHours(hours[j]+36e5-6e4,p.z,lo,hi)))c.push(j);return c};
+  const okCols=cols(9,18);
   for(const j of okCols) for(const g of list.querySelectorAll('.grid')) g.children[j].classList.add('ok');
   if(state.places.length>1){
-    if(okCols.length){
-      const a=hours[okCols[0]],b=hours[okCols[okCols.length-1]+1]||hours[23];
-      const f=x=>tf(bz).format(x);
-      overlap.innerHTML=`<b>${okCols.length}h everyone is at work</b> · ${f(a)}–${f(b)} in ${esc(shown(baseP()))}`;
-    } else overlap.innerHTML='<b>No hour suits everyone</b> · nobody is at work at the same time';
+    // US and India never share a 9-6 hour; then the useful answer is when everyone is awake (7 AM-10 PM)
+    const use=okCols.length?okCols:cols(7,22);
+    if(use.length){
+      // one range per unbroken block: joining 7-11 AM and 9-10 PM into 7 AM-10 PM covered Mumbai's night
+      const runs=[];for(const j of use){const r=runs[runs.length-1];if(r&&r[1]===j)r[1]=j+1;else runs.push([j,j+1])}
+      const f=x=>tf(bz).format(x),end=k=>k<24?hours[k]:hours[23]+36e5;
+      setHTML(overlap,`<b>${use.length}h everyone is ${okCols.length?'at work':'awake'}</b> · ${runs.map(r=>f(hours[r[0]])+'–'+f(end(r[1]))).join(', ')} in ${esc(shown(baseP()))}`);
+    } else setHTML(overlap,'<b>No hour suits everyone</b> · no shared hour between 7 AM and 10 PM');
     overlap.hidden=false;
   } else overlap.hidden=true;
   // Heads-up before clocks change: the week the UK has changed and the US has not is when
@@ -861,8 +877,8 @@ function render(){
     // Differences only change if some city does not shift, shifts by a different amount, or on
     // another day. Copenhagen and Nuuk change at the same instant under different local dates.
     const shift=cs.some(c=>!c||c.d!==cs[0].d||Math.abs(c.at-cs[0].at)>864e5);
-    dstNote.innerHTML='<b>Clocks change</b> · '+gs.map(g=>g.ns.join(', ')+' '+(g.past?'went':g.ns.length>1?'go':'goes')+' '+(g.d>0?'forward ':'back ')+amt(g.d)+' on '+g.when).join(' · ')
-      +(shift?'. The time differences between these cities change too.':'');
+    setHTML(dstNote,'<b>Clocks change</b> · '+gs.map(g=>g.ns.join(', ')+' '+(g.past?'went':g.ns.length>1?'go':'goes')+' '+(g.d>0?'forward ':'back ')+amt(g.d)+' on '+g.when).join(' · ')
+      +(shift?'. The time differences between these cities change too.':''));
     dstNote.hidden=false;
   } else dstNote.hidden=true;
   for(const b of document.querySelectorAll('[data-h24]'))b.setAttribute('aria-pressed',String((b.dataset.h24==='1')===pref.h24));
@@ -1035,7 +1051,7 @@ function showInstall(html){
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;
   showInstall('<span>Add Time Zones to your home screen</span><button type="button" id="instGo">Install</button>')});
 if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&/Safari/.test(navigator.userAgent)&&!/CriOS|FxiOS/.test(navigator.userAgent))
-  showInstall('<span>Add to Home Screen: tap Share, then <b>Add to Home Screen</b></span>');
+  showInstall('<span>Add to Home Screen: use Safari\'s own share button (toolbar or ••• menu), then <b>Add to Home Screen</b></span>');
 list.addEventListener('click',e=>{
   const r=e.target.closest('[data-ren]');if(!r)return;
   renameAt(+r.dataset.ren);
@@ -1055,16 +1071,17 @@ async function put(text,btn,okMsg){
   try{await navigator.clipboard.writeText(text);flash(btn,okMsg)}
   catch(e){window.prompt('Copy this:',text)}   // http, or permission denied
 }
-$('copy').addEventListener('click',()=>{
+// "Austin: 9:00 AM" rather than padded columns, which come out ragged in chat apps
+function timesText(){
   const bz=baseP().z,t=live?Date.now():instantAt(dateEl.value,planMin,bz);
   const day=new Intl.DateTimeFormat('en-US',{timeZone:bz,weekday:'short',month:'short',day:'numeric'}).format(t);
-  const baseDay=ymd(t,bz),w=Math.max(...state.places.map(p=>shown(p).length));
-  const lines=state.places.map(p=>{
+  const baseDay=ymd(t,bz);
+  return day+'\n'+state.places.map(p=>{
     const dd=Math.round((Date.parse(ymd(t,p.z))-Date.parse(baseDay))/864e5);
-    return shown(p).padEnd(w)+'  '+tf(p.z).format(t)+(dd?' ('+(dd>0?'+':'')+dd+'d)':'');
-  });
-  put(day+'\n'+lines.join('\n'),$('copy'),'Copied');
-});
+    return shown(p)+': '+tf(p.z).format(t)+(dd?' ('+(dd>0?'+':'')+dd+'d)':'');
+  }).join('\n');
+}
+$('copy').addEventListener('click',()=>put(timesText(),$('copy'),'Copied'));
 say.addEventListener('click',e=>{const b=e.target.closest('[data-try]');if(!b)return;
   $('addInput').value=b.dataset.try;$('addForm').requestSubmit()});
 $('reorder').addEventListener('click',()=>{
@@ -1079,7 +1096,12 @@ glance.addEventListener('click',e=>{
   c.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
   const star=c.querySelector('[data-base]');if(star)star.focus({preventScroll:true});
 });
-$('share').addEventListener('click',()=>{writeHash();put(location.href,$('share'),'Link copied')});
+// Phones get the share sheet: one tap sends the times and the link to WhatsApp. Computers keep copying.
+const canShare=!!navigator.share&&matchMedia('(pointer:coarse)').matches;
+if(canShare)$('share').textContent='Share';
+$('share').addEventListener('click',()=>{writeHash();
+  if(canShare)navigator.share({text:timesText(),url:location.href}).catch(e=>{if(e.name!=='AbortError')put(location.href,$('share'),'Link copied')});
+  else put(location.href,$('share'),'Link copied')});
 document.querySelector('.acts').addEventListener('click',e=>{
   const b=e.target.closest('[data-h24],[data-f]');if(!b)return;
   if(b.dataset.h24!=null)setPref('h24',b.dataset.h24==='1');else setPref('f',b.dataset.f==='1');
@@ -1089,7 +1111,7 @@ slider.addEventListener('input',()=>{live=false;planMin=+slider.value;render()})
 dateEl.addEventListener('change',()=>{live=false;render()});
 
 // Drag anywhere across the strips to move the band; touch-action:pan-y keeps vertical scroll.
-let dragging=false;
+let dragging=false,dx0=0,dy0=0,dirOK=false;
 // Column from x-geometry rather than hit-testing: every strip shares the same 24-column
 // grid, so this keeps tracking even when the finger drifts off the strip vertically.
 function colAtX(x){
@@ -1152,7 +1174,7 @@ list.addEventListener('pointerdown',e=>{
     try{g.setPointerCapture(e.pointerId)}catch(err){try{list.setPointerCapture(e.pointerId)}catch(_){}}
     return}
   const c=e.target.closest&&e.target.closest('.grid div');if(!c)return;
-  dragging=true;try{list.setPointerCapture(e.pointerId)}catch(err){}
+  dragging=true;dx0=e.clientX;dy0=e.clientY;dirOK=false;try{list.setPointerCapture(e.pointerId)}catch(err){}
   // deliberately NOT goTo() here: iOS turns a vertical swipe that began on a cell into a
   // scroll, and jumping the clock on touch-down made the page scrub when you meant to scroll.
 });
@@ -1175,6 +1197,8 @@ list.addEventListener('pointermove',e=>{
     return;
   }
   if(!dragging)return;
+  // decided once per gesture: a vertical start is a scroll, but a sideways scrub keeps tracking if the finger drifts
+  if(!dirOK){if(Math.abs(e.clientX-dx0)<=Math.abs(e.clientY-dy0))return;dirOK=true}
   const j=colAtX(e.clientX);
   if(j!==null&&j*60!==planMin)goTo(j*60);
 });
