@@ -1,10 +1,12 @@
 // Network-first for the page so an update always lands when online, cache-first for
 // the static assets. Bump CACHE to purge everything from an older deploy.
-const CACHE = 'tz-v13';
-const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './cities.txt'];
+const CACHE = 'tz-v14';
+const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './cities.txt'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // cache:'reload' skips the browser's HTTP cache (GitHub Pages allows 10 minutes), so a new version
+  // never pins a stale manifest or icon until the next CACHE bump
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
