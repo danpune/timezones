@@ -1,6 +1,6 @@
 // Network-first for the page so an update always lands when online, cache-first for
 // the static assets. Bump CACHE to purge everything from an older deploy.
-const CACHE = 'tz-v14';
+const CACHE = 'tz-v15';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './cities.txt'];
 
 self.addEventListener('install', e => {
