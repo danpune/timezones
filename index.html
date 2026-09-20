@@ -65,6 +65,7 @@ h1{font-size:20px;font-weight:700;margin-bottom:10px;padding-bottom:9px;display:
 .bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:6px 0 10px;
   border-bottom:1px solid transparent;transition:border-color .18s ease,box-shadow .18s ease}
 .bar.stuck{border-bottom-color:var(--line);box-shadow:0 10px 16px -14px rgba(16,24,40,.75)}
+@media(max-height:480px){.bar{padding:4px 0 6px}.ctl{margin-bottom:5px}}
 .ctl{display:flex;gap:8px;align-items:center;margin-bottom:8px}
 .ctl input[type=date]{flex:1;min-height:44px;font:inherit;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--tx)}
 button{min-height:44px;padding:0 16px;font:inherit;font-weight:600;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--acc);cursor:pointer}
@@ -231,7 +232,8 @@ body.reordering .city{transition:none}
    and tighter gaps keep "San Francisco" whole at 375px at the widest time. */
 /* The weather adds ~40px to the sunrise line; half-hour zones ("+10:30 from you UTC+5:30") then
    need tighter spacing to stay on one line. */
-@media(max-width:420px){.name b{font-size:16px;gap:3px}.time b{font-size:20px}.top{gap:5px}.sf{height:12px}.sunrow{column-gap:5px}}
+@media(max-width:420px){.name b{font-size:16px;gap:3px}.time b{font-size:20px}.top{gap:5px}.sf{height:12px}.sunrow{column-gap:5px}
+  .grid div{min-height:36px;padding:13px 0 14px}}
 @media(max-width:359px){.name b{font-size:16px}.time b{font-size:20px}}
 
 /* States: the file had none, so nothing answered the cursor or the keyboard. */
@@ -351,7 +353,7 @@ button:active{transform:translateY(1px)}
     <a href="https://github.com/danpune/timezones/blob/main/LICENSE">MIT licence</a>
     <a href="https://www.geonames.org/" title="City data licensed CC BY 4.0">Cities: GeoNames</a>
     <a href="https://open-meteo.com/" title="Weather data by Open-Meteo.com, CC BY 4.0">Weather: Open-Meteo</a>
-    <span class="ver">build 2026.09.19-u</span>
+    <span class="ver">build 2026.09.19-v</span>
   </div>
 </footer>
 </main>
