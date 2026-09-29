@@ -24,8 +24,20 @@ account, no ads, no cookies. Works offline once loaded.
   `#Austin,London,Mumbai&b=London&d=2026-09-14&t=09:30`
 - **Copy times** as a plain text block for mail or chat.
 - **Rename and reorder.** Call a city "Mom" if that is what it is. Drag ⠿ to reorder.
+- **Weather per city** for the hour you are looking at, from Open-Meteo (no key). The weather
+  needs a connection; the clocks, sun and sky work offline.
+- **12h / 24h and °C / °F** toggles under the cities.
+- **Clock-change heads-up.** An orange note flags any city whose clocks change for
+  daylight saving in the week before or the two weeks after the date shown.
 - Search about 6,300 cities and every country as you type, plus all IANA zones. "Eastern Time", "PST", "IST" and "GMT" all resolve.
 - Light and dark, and installable to a phone home screen.
+
+## Mac app
+
+The free [Time Zones menu bar app](https://github.com/danpune/timezones-mac) keeps up to
+six of your cities next to the clock, each with its flag, weather and the same sky
+colours, and keeps itself up to date.
+[Download the latest release](https://github.com/danpune/timezones-mac/releases/latest).
 
 ## Why
 
